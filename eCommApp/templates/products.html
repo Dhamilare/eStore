@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% load querystring %}
 
+{% block title %}Browse Products{% endblock %}
+
 {% block content %}
 <div class="container my-5">
     <div id="ajax-message-box" role="alert" style="display:none;"></div>
 
+    <!-- Page Header -->
     <section class="page-header text-white rounded-4 shadow-lg mb-5 bg-dark py-5">
         <div class="container text-center">
             <h1>Our Products</h1>
@@ -13,7 +16,56 @@
     </section>
 
     <div class="row">
-        <!-- Filters Sidebar (if present, keep it in your code) -->
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <form method="get" class="bg-light p-4 rounded shadow-sm">
+                <h5 class="fw-bold mb-3">🔍 Filters</h5>
+
+                <!-- Search -->
+                <div class="mb-3">
+                    <label for="q" class="form-label">Search</label>
+                    <input type="text" id="q" name="q" class="form-control" value="{{ query }}">
+                </div>
+
+                <!-- Category Filter -->
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if selected_category and selected_category.slug == category.slug %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Price Range -->
+                <div class="mb-3">
+                    <label class="form-label">Price Range (₦)</label>
+                    <div class="d-flex gap-2">
+                        <input type="number" name="min_price" class="form-control" placeholder="Min"
+                               value="{{ min_price_param }}" min="0" step="0.01">
+                        <input type="number" name="max_price" class="form-control" placeholder="Max"
+                               value="{{ max_price_param }}" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <!-- Sort By -->
+                <div class="mb-3">
+                    <label class="form-label">Sort By</label>
+                    <select name="sort_by" class="form-select">
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
+                        <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Newest</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100 mt-2">Apply Filters</button>
+            </form>
+        </div>
 
         <!-- Products Grid -->
         <div class="col-lg-9">
@@ -21,27 +73,24 @@
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     {% for product in products %}
                         <div class="col">
-                            <div class="card h-100 position-relative {% if product.stock < 1 %}bg-light opacity-75{% endif %}">
+                            <div class="card h-100 position-relative">
                                 <a href="{% url 'product_detail' slug=product.slug %}" class="text-decoration-none text-dark">
                                     <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
                                 </a>
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title">{{ product.name }}</h5>
                                     <p class="card-text text-muted small">{{ product.description|truncatechars:100 }}</p>
-                                    
-                                    {% if product.stock < 1 %}
-                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">Out of Stock</span>
-                                    {% endif %}
-
                                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
                                         <span class="product-price">₦{{ product.price }}</span>
-                                        
-                                        <button class="btn btn-primary btn-sm rounded-pill add-to-cart-btn"
-                                                data-product-id="{{ product.id }}"
-                                                data-product-name="{{ product.name }}"
-                                                {% if product.stock < 1 %}disabled{% endif %}>
-                                            <i class="fas fa-shopping-cart me-2"></i> Add to Cart
-                                        </button>
+                                        {% if product.stock > 0 %}
+                                            <button class="btn btn-primary btn-sm rounded-pill add-to-cart-btn"
+                                                    data-product-id="{{ product.id }}"
+                                                    data-product-name="{{ product.name }}">
+                                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                                            </button>
+                                        {% else %}
+                                            <span class="badge bg-secondary text-white px-3 py-1">Out of Stock</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -50,107 +99,33 @@
                 </div>
 
                 <!-- Pagination -->
-                {% if is_paginated %}
-                    <nav aria-label="Page navigation" class="mt-5">
-                        <ul class="pagination justify-content-center">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?{% querystring request.GET page=page_obj.previous_page_number %}">Previous</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">Previous</span>
-                                </li>
-                            {% endif %}
-
-                            {% for page_num in paginator.page_range %}
-                                {% if page_obj.number == page_num %}
-                                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-                                {% else %}
+                <div class="mt-5">
+                    {% if is_paginated %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?{% querystring request.GET page=page_num %}">{{ page_num }}</a>
+                                        <a class="page-link" href="?{% querystring request page=page_obj.previous_page_number %}">Previous</a>
                                     </li>
                                 {% endif %}
-                            {% endfor %}
-
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?{% querystring request.GET page=page_obj.next_page_number %}">Next</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">Next</span>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                {% endif %}
+                                {% for i in paginator.page_range %}
+                                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                                        <a class="page-link" href="?{% querystring request page=i %}">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% querystring request page=page_obj.next_page_number %}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                </div>
             {% else %}
                 <div class="alert alert-warning">No products found matching your filters.</div>
             {% endif %}
         </div>
     </div>
 </div>
-
-<script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function showAjaxMessage(message, type = 'success') {
-    const msgBox = document.getElementById('ajax-message-box');
-    msgBox.textContent = message;
-    msgBox.className = `alert alert-${type}`;
-    msgBox.style.display = 'block';
-    setTimeout(() => msgBox.style.display = 'none', 3000);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const csrftoken = getCookie('csrftoken');
-    const buttons = document.querySelectorAll('.add-to-cart-btn');
-
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const productId = this.dataset.productId;
-            const productName = this.dataset.productName;
-
-            fetch("{% url 'api_add_to_cart' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({ product_id: productId, quantity: 1 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAjaxMessage(`'${productName}' added to cart!`, 'success');
-                    const cartBadge = document.querySelector('.fa-shopping-cart + .badge');
-                    if (cartBadge) {
-                        cartBadge.textContent = data.cart_count;
-                        cartBadge.classList.remove('d-none');
-                    }
-                } else {
-                    showAjaxMessage(data.message || 'Failed to add to cart', 'danger');
-                }
-            })
-            .catch(() => {
-                showAjaxMessage('Error adding to cart', 'danger');
-            });
-        });
-    });
-});
-</script>
 {% endblock %}
