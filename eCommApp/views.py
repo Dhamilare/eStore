@@ -523,6 +523,7 @@ class PaymentMethodsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         user = self.request.user
         cart = getattr(user, 'cart', None)
 
@@ -530,31 +531,38 @@ class PaymentMethodsView(LoginRequiredMixin, TemplateView):
             context['error'] = "Your cart is empty. Please add items to proceed."
             return context
 
-        # Check if there's already an uncompleted order
-        order = Order.objects.filter(user=user, ordered=False).first()
-        if not order:
-            order = Order.objects.create(user=user)
-            for item in cart.items.select_related('product'):
-                OrderItem.objects.create(
-                    order=order,
-                    product=item.product,
-                    price=item.price_at_addition or item.product.get_display_price(),
-                    quantity=item.quantity
-                )
+        insufficient_stock = []
+        for item in cart.items.select_related('product'):
+            if item.product.stock < item.quantity:
+                insufficient_stock.append({
+                    'product': item.product.name,
+                    'available': item.product.stock,
+                    'requested': item.quantity
+                })
 
-            # Attach billing address
-            bill_address = BillingAddress.objects.filter(user=user).first()
-            if bill_address:
-                order.billing_address = bill_address
-                order.save()
+        if insufficient_stock:
+            error_msg = "Some items in your cart are no longer available in the requested quantity:<br>"
+            for entry in insufficient_stock:
+                error_msg += f"<strong>{entry['product']}</strong>: Available: {entry['available']}, You requested: {entry['requested']}<br>"
+            context['error'] = error_msg
+            return context
 
-            # Clear cart
-            cart.clear()
+        order = Order.objects.create(user=user)
+        for item in cart.items.select_related('product'):
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                price=item.price_at_addition or item.product.get_display_price(),
+                quantity=item.quantity
+            )
 
-        else:
-            bill_address = order.billing_address or BillingAddress.objects.filter(user=user).first()
+        bill_address = BillingAddress.objects.filter(user=user).first()
+        if bill_address:
+            order.billing_address = bill_address
+            order.save()
 
-        # Costs
+        cart.clear()
+
         shipping = settings.SHIPPING_COST
         tax = order.get_total_price() * settings.TAX_RATE
         grand_total = order.get_total_price() + shipping + tax
@@ -594,13 +602,10 @@ def verifyPayment(request):
     txref = request.GET.get('reference', '').strip()
     if not txref:
         raise Http404("Missing transaction reference.")
-
-    # Always use latest unpaid order
     order = Order.objects.filter(user=request.user, ordered=False).order_by('-id').first()
     if not order:
         raise Http404("No pending order found for verification.")
-
-    # Prepare Paystack verify URL
+    
     verify_url = f"https://api.paystack.co/transaction/verify/{txref}"
     headers = {
         'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}'
@@ -622,7 +627,6 @@ def verifyPayment(request):
         expected_amount = int((order.get_total_price() + settings.SHIPPING_COST + (order.get_total_price() * settings.TAX_RATE)) * 100)
 
         if status == 'success' and amount_paid == expected_amount and currency == 'NGN':
-            # Prevent duplicate creation
             if not Payment.objects.filter(reference=txref).exists():
                 card_info = trx_data.get('authorization', {})
                 payment = Payment.objects.create(
@@ -635,12 +639,15 @@ def verifyPayment(request):
                 )
 
                 order.payment = payment
+                for item in order.order_items.select_related('product'):
+                    product = item.product
+                    if product and product.stock >= item.quantity:
+                        product.stock -= item.quantity
+                        product.save()
                 order.ordered = True
                 order.save()
-
-            # Store last order in session for success page
             request.session['last_order_id'] = order.id
-            return redirect('success')  # ✅ Proper redirection
+            return redirect('success')
         else:
             print(f"[Paystack] Invalid payment: status={status}, amount={amount_paid}, currency={currency}")
             return redirect('checkout')
