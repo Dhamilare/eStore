@@ -34,7 +34,7 @@ urlpatterns = [
     path('accounts/password_reset/',
          auth_views.PasswordResetView.as_view(
              template_name='accounts/password_reset.html',
-             email_template_name='accounts/password_reset_confirm.html',
+             email_template_name='accounts/password_reset_email.html',
              success_url=reverse_lazy('password_reset_done'),
              form_class=CustomPasswordResetForm
          ),
