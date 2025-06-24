@@ -527,44 +527,55 @@ def success_view(request):
 class PaymentMethodsView(LoginRequiredMixin, TemplateView):
     template_name = 'payment.html'
 
-    @transaction.atomic
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        cart = getattr(user, 'cart', None)
 
-        # Try to get unpaid order
+        if not cart or not cart.items.exists():
+            context['error'] = "Your cart is empty. Please add items to proceed."
+            return context
+
+        # Check if there's already an uncompleted order
         order = Order.objects.filter(user=user, ordered=False).first()
-
-        # If no unpaid order, create from cart
         if not order:
-            cart = getattr(user, 'cart', None)
-            if not cart or not cart.items.exists():
-                context['error'] = "Your cart is empty."
-                return context
-
-            order = Order.objects.create(user=user, ordered=False)
-
-            for cart_item in cart.items.all():
+            order = Order.objects.create(user=user)
+            for item in cart.items.select_related('product'):
                 OrderItem.objects.create(
                     order=order,
-                    product=cart_item.product,
-                    quantity=cart_item.quantity,
-                    price=cart_item.price_at_addition or cart_item.product.get_display_price(),
+                    product=item.product,
+                    price=item.price_at_addition or item.product.get_display_price(),
+                    quantity=item.quantity
                 )
 
-            # Optionally clear cart here or after successful payment
+            # Attach billing address
+            bill_address = BillingAddress.objects.filter(user=user).first()
+            if bill_address:
+                order.billing_address = bill_address
+                order.save()
+
+            # Clear cart
             cart.clear()
 
-        bill_address = order.billing_address or BillingAddress.objects.filter(user=user).first()
+        else:
+            bill_address = order.billing_address or BillingAddress.objects.filter(user=user).first()
+
+        # Costs
+        shipping = settings.SHIPPING_COST
+        tax = order.get_total_price() * settings.TAX_RATE
+        grand_total = order.get_total_price() + shipping + tax
+
         reference = f"ECOM-{get_random_string(12).upper()}"
 
         context.update({
             'orders': order,
             'bill_address': bill_address,
             'unique_ref': reference,
-            'paystack_public_key': config('PAYSTACK_PUBLIC_KEY', default=settings.PAYSTACK_PUBLIC_KEY),
+            'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY,
+            'shipping': shipping,
+            'tax': tax,
+            'grand_total': grand_total,
         })
-
         return context
 
 
@@ -644,27 +655,26 @@ def submit_review(request, product_id):
 @login_required
 def verifyPayment(request):
     txref = request.GET.get('reference', '').strip()
-
     if not txref:
         raise Http404("Missing transaction reference.")
 
-    try:
-        order = Order.objects.get(user=request.user, ordered=False)
-    except Order.DoesNotExist:
+    # Always use latest unpaid order
+    order = Order.objects.filter(user=request.user, ordered=False).order_by('-id').first()
+    if not order:
         raise Http404("No pending order found for verification.")
 
-    # Prepare Paystack verification endpoint
+    # Prepare Paystack verify URL
     verify_url = f"https://api.paystack.co/transaction/verify/{txref}"
+    headers = {
+        'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}'
+    }
 
     try:
-        response = requests.get(
-            verify_url,
-            headers={'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}'}
-        )
+        response = requests.get(verify_url, headers=headers)
         data = response.json()
     except Exception as e:
-        print(f"[Paystack Error] Verification failed: {e}")
-        return redirect(reverse('checkout') + '?error=connection')
+        print(f"[Paystack] Request failed: {e}")
+        return redirect('checkout')
 
     if data.get('status') is True:
         trx_data = data.get('data', {})
@@ -672,16 +682,16 @@ def verifyPayment(request):
         currency = trx_data.get('currency')
         status = trx_data.get('status')
 
-        expected_amount = int(order.get_total_price() * 100)  # Paystack uses kobo
+        expected_amount = int((order.get_total_price() + settings.SHIPPING_COST + (order.get_total_price() * settings.TAX_RATE)) * 100)
 
         if status == 'success' and amount_paid == expected_amount and currency == 'NGN':
-            # Avoid duplicate payment creation
+            # Prevent duplicate creation
             if not Payment.objects.filter(reference=txref).exists():
                 card_info = trx_data.get('authorization', {})
                 payment = Payment.objects.create(
                     user=request.user,
                     reference=txref,
-                    amount=order.get_total_price(),
+                    amount=(amount_paid / 100),
                     payment_gateway='PAYSTACK',
                     card_brand=(card_info.get('brand') or 'UNKNOWN').upper(),
                     card_last_four=card_info.get('last4'),
@@ -691,13 +701,14 @@ def verifyPayment(request):
                 order.ordered = True
                 order.save()
 
+            # Store last order in session for success page
             request.session['last_order_id'] = order.id
-            return redirect(reverse('success') + '?success=1')
+            return redirect('success')  # ✅ Proper redirection
         else:
-            print(f"[Paystack Error] Status: {status}, Amount: {amount_paid}, Currency: {currency}")
-            return redirect(reverse('checkout') + '?error=validation')
+            print(f"[Paystack] Invalid payment: status={status}, amount={amount_paid}, currency={currency}")
+            return redirect('checkout')
     else:
-        print("[Paystack Error] API response invalid or failed")
-        return redirect(reverse('checkout') + '?error=api')
+        print(f"[Paystack] Failed response: {data}")
+        return redirect('checkout')
 
 

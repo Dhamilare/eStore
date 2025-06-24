@@ -8,6 +8,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
 from django.db.models import Avg
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 # --- Utility Functions ---
@@ -205,6 +206,16 @@ class Order(models.Model):
     def get_total_price(self):
         return sum(item.get_final_price() for item in self.order_items.all())
 
+    def get_shipping(self):
+        return settings.SHIPPING_COST
+
+    def get_tax(self):
+        return self.get_total_price() * settings.TAX_RATE
+
+    def get_grand_total(self):
+        return self.get_total_price() + self.get_shipping() + self.get_tax()
+    
+    
     def save(self, *args, **kwargs):
         send_status_email_flag = False
         is_newly_shipped = False

@@ -17,7 +17,7 @@
                 <div class="accordion-item mb-3 shadow-sm rounded-3">
                     <h2 class="accordion-header" id="heading{{ forloop.counter }}">
                         <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
-                            Order #{{ order.id }} — {{ order.ordered_date|date:"M d, Y" }} — ₦{{ order.get_total_price|floatformat:2 }}
+                            Order #{{ order.id }} — {{ order.ordered_date|date:"M d, Y" }} — ₦{{ order.get_grand_total|floatformat:2 }}
                         </button>
                     </h2>
                     <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#orderAccordion">
@@ -36,13 +36,18 @@
                             </ul>
 
                             <div class="mb-3">
-                                <p><strong>Transaction Reference:</strong> 
+                                <p><strong>Transaction Reference:</strong>
                                     {% if order.payment %}{{ order.payment.reference }}{% else %}<em>Unavailable</em>{% endif %}
                                 </p>
                             </div>
 
-                            <div class="text-end fw-bold">
-                                Grand Total: ₦{{ order.get_total_price|floatformat:2 }}
+                            <!-- Cost Breakdown -->
+                            <div class="text-end">
+                                <p><strong>Subtotal:</strong> ₦{{ order.get_total_price|floatformat:2 }}</p>
+                                <p><strong>Shipping:</strong> ₦{{ order.get_shipping|floatformat:2 }}</p>
+                                <p><strong>Tax:</strong> ₦{{ order.get_tax|floatformat:2 }}</p>
+                                <hr>
+                                <p class="fw-bold fs-5">Grand Total: ₦{{ order.get_grand_total|floatformat:2 }}</p>
                             </div>
                         </div>
                     </div>
