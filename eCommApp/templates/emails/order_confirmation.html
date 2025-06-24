@@ -2,110 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmation - #{{ order.id }}</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 30px 10px;
-            color: #333;
-        }
-        .email-container {
-            max-width: 680px;
-            margin: 0 auto;
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-        }
-        .email-header {
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-        }
-        .email-header h2 {
-            margin: 0;
-            color: #27ae60;
-            font-size: 24px;
-        }
-        .email-body p {
-            line-height: 1.6;
-            margin: 10px 0;
-        }
-        .summary-box {
-            background-color: #fafafa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-        }
-        .summary-box ul {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-        .summary-box li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 15px;
-        }
-        .summary-box li:last-child {
-            border-bottom: none;
-        }
-        .bold {
-            font-weight: bold;
-        }
-        .total {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px;
-            color: #000;
-        }
-        .footer {
-            font-size: 13px;
-            text-align: center;
-            color: #888;
-            margin-top: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-    </style>
 </head>
-<body>
-    <div class="email-container">
-        <div class="email-header">
-            <h2>Order Confirmation</h2>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f7fa; margin: 0; padding: 30px 10px; color: #333;">
+    <div class="email-container" style="max-width: 680px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">
+        <div class="email-header" style="border-bottom: 1px solid #ddd; margin-bottom: 20px; padding-bottom: 10px; text-align: center;">
+            <h2 style="margin: 0; color: #27ae60; font-size: 28px;">🎉 Order Confirmed!</h2>
         </div>
 
-        <div class="email-body">
-            <p>Hello {{ order.billing_address.first_name }},</p>
+        <div class="email-body" style="padding-bottom: 20px;">
+            <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;">Hello <span style="font-weight: bold;">{{ order.billing_address.first_name }}</span>,</p>
 
-            <p>Thank you for your order! Below are your order details:</p>
+            <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;">Thank you for your order! Your purchase is confirmed, and we're getting it ready for you. Below are your order details:</p>
 
-            <p><strong>Order ID:</strong> #{{ order.id }}</p>
-            <p><strong>Payment Reference:</strong> {{ order.payment.reference }}</p>
+            <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;"><strong style="font-weight: bold;">Order ID:</strong> #<span style="color: #27ae60; font-weight: bold;">{{ order.id }}</span></p>
+            {% if order.payment and order.payment.reference %} {# Added check for order.payment to avoid error if payment is null #}
+                <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;"><strong style="font-weight: bold;">Payment Reference:</strong> {{ order.payment.reference }}</p>
+            {% endif %}
 
-            <div class="summary-box">
-                <p class="bold">🧾 Order Summary</p>
-                <ul>
-                    {% for item in order.items.all %}
-                        <li>{{ item.quantity }} × {{ item.item.name }} — ₦{{ item.get_final_price }}</li>
-                    {% endfor %}
-                </ul>
+            <div class="summary-box" style="background-color: #fafafa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                <p style="font-weight: bold; margin-top: 0; margin-bottom: 15px; font-size: 18px; color: #555;">🧾 Order Summary</p>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; width: 100%; font-size: 15px; background-color: #ffffff;">
+                    <thead>
+                        <tr style="background-color: #f0f0f0;">
+                            <th scope="col" style="padding: 12px 10px; text-align: left; border-bottom: 1px solid #ddd; font-weight: bold;">Product</th>
+                            <th scope="col" style="padding: 12px 10px; text-align: center; border-bottom: 1px solid #ddd; font-weight: bold; width: 50px;">Qty</th>
+                            <th scope="col" style="padding: 12px 10px; text-align: right; border-bottom: 1px solid #ddd; font-weight: bold; width: 80px;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.order_items.all %} {# Confirmed 'order_items.all' #}
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ item.product.name }}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">{{ item.quantity }}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦{{ item.get_final_price|floatformat:2 }}</td> {# Confirmed 'item.get_final_price' #}
+                        </tr>
+                        {% endfor %}
+                        <tr style="background-color: #fcfcfc;">
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; border-top: 1px solid #ddd;">Subtotal:</td>
+                            <td style="padding: 10px; text-align: right; font-weight: bold; border-top: 1px solid #ddd;">₦{{ order.get_total_price|floatformat:2 }}</td> {# Confirmed 'order.get_total_price' #}
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">Shipping:</td>
+                            <td style="padding: 10px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">₦{{ order.get_shipping|floatformat:2 }}</td> {# Confirmed 'order.get_shipping' #}
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">Tax:</td>
+                            <td style="padding: 10px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">₦{{ order.get_tax|floatformat:2 }}</td> {# Confirmed 'order.get_tax' #}
+                        </tr>
+                        <tr style="background-color: #e6ffe6;">
+                            <td colspan="2" style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #27ae60;">Grand Total:</td>
+                            <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #27ae60;">₦{{ order.get_grand_total|floatformat:2 }}</td> {# Confirmed 'order.get_grand_total' #}
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <p class="total">Total: ₦{{ order.get_total_price }}</p>
-
-            <p><strong>📍 Shipping Address:</strong><br>
+            <p style="line-height: 1.6; margin: 15px 0; font-size: 16px;"><strong style="font-weight: bold;">📍 Shipping Address:</strong><br>
             {{ order.billing_address.address }}<br>
-            {{ order.billing_address.city }}, {{ order.billing_address.country.name }}<br>
-            <strong>Phone:</strong> {{ order.billing_address.phone }}</p>
+            {{ order.billing_address.city }}, {{ order.billing_address.country.name }}{% if order.billing_address.postal_code %}, {{ order.billing_address.postal_code }}{% endif %}<br>
+            <strong style="font-weight: bold;">Phone:</strong> {{ order.billing_address.phone }}</p>
 
-            <p>We’ll notify you once your order is shipped. If you have any questions, contact us anytime.</p>
+            <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;">We’ll notify you once your order is shipped. You can view the status of your order and your full order history by logging into your account or visiting our website:</p>
+
+            <p style="text-align: center; margin-top: 25px;">
+                <a href="{{ site_url }}{% url 'order_history' %}" style="display: inline-block; padding: 12px 25px; background-color: #27ae60; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">View Your Order & History</a>
+            </p>
         </div>
 
-        <div class="footer">
-            &copy; {{ now.year }} The CakeShop. All rights reserved.<br>
+        <div class="footer" style="font-size: 13px; text-align: center; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+            &copy; {{ now.year }} EcomStore. All rights reserved.<br>
             This is an automated email. Please do not reply.
         </div>
     </div>

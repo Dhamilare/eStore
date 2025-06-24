@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
+{% load custom_filters %} {# Assuming custom_filters for 'multiply' #}
 
 {% block title %}Order History{% endblock %}
 
 {% block content %}
 <div class="container my-5">
-    <section class="page-header text-white rounded-4 shadow-lg mb-5">
+    <section class="page-header text-white rounded-4 shadow-lg mb-5" style="background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%); padding: 80px 0;">
         <div class="container text-center">
             <h1>Order History</h1>
             <p class="lead">Review your past purchases and their details.</p>
@@ -17,31 +18,90 @@
                 <div class="accordion-item mb-3 shadow-sm rounded-3">
                     <h2 class="accordion-header" id="heading{{ forloop.counter }}">
                         <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
-                            Order #{{ order.id }} — {{ order.ordered_date|date:"M d, Y" }} — ₦{{ order.get_grand_total|floatformat:2 }}
+                            <div class="d-flex justify-content-between align-items-center w-100 pe-3">
+                                <span>
+                                    Order #{{ order.id }} — {{ order.ordered_date|date:"M d, Y" }}
+                                    <br class="d-md-none">
+                                    <small class="text-muted d-none d-md-inline ms-2">Total: ₦{{ order.get_grand_total|floatformat:2 }}</small>
+                                </span>
+                                <span class="badge rounded-pill ms-auto px-3 py-2
+                                    {% if order.status == 'PENDING' %}bg-warning text-dark
+                                    {% elif order.status == 'PROCESSING' %}bg-info
+                                    {% elif order.status == 'SHIPPED' %}bg-primary
+                                    {% elif order.status == 'DELIVERED' %}bg-success
+                                    {% elif order.status == 'CANCELLED' %}bg-danger
+                                    {# Add 'REFUNDED' if you use it #}
+                                    {% else %}bg-light text-dark
+                                    {% endif %}
+                                ">
+                                    {# Note: The display text is Title Case, even if the model stores uppercase #}
+                                    {% if order.status == 'PENDING' %}
+                                        <i class="fas fa-hourglass-half me-1"></i> Pending
+                                    {% elif order.status == 'PROCESSING' %}
+                                        <i class="fas fa-spinner fa-spin me-1"></i> Processing
+                                    {% elif order.status == 'SHIPPED' %}
+                                        <i class="fas fa-truck me-1"></i> Shipped
+                                    {% elif order.status == 'DELIVERED' %}
+                                        <i class="fas fa-check-circle me-1"></i> Delivered
+                                    {% elif order.status == 'CANCELLED' %}
+                                        <i class="fas fa-times-circle me-1"></i> Cancelled
+                                    {# Add 'REFUNDED' if you use it #}
+                                    {# For any other status, display it capitalized directly #}
+                                    {% else %}
+                                        <i class="fas fa-info-circle me-1"></i> {{ order.status|capfirst }}
+                                    {% endif %}
+                                </span>
+                            </div>
                         </button>
                     </h2>
                     <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#orderAccordion">
                         <div class="accordion-body">
 
                             <ul class="list-group mb-3">
-                                {% for item in order.order_items.all %}
+                                {% for item in order.order_items.all %} {# Confirmed 'order_items.all' #}
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
                                             <strong>{{ item.product.name }}</strong><br>
-                                            Quantity: {{ item.quantity }} × ₦{{ item.price|floatformat:2 }}
+                                            Quantity: {{ item.quantity }} × ₦{{ item.get_final_price|floatformat:2 }} {# Confirmed 'item.get_final_price' #}
                                         </div>
-                                        <span class="badge bg-primary rounded-pill">₦{{ item.get_total_product_price|floatformat:2 }}</span>
+                                        <span class="badge bg-primary rounded-pill">₦{{ item.get_final_price|multiply:item.quantity|floatformat:2 }}</span> {# Confirmed 'item.get_final_price' #}
                                     </li>
                                 {% endfor %}
                             </ul>
 
                             <div class="mb-3">
+                                <p><strong>Order Status:</strong>
+                                    <span class="badge rounded-pill ms-2
+                                        {% if order.status == 'PENDING' %}bg-warning text-dark
+                                        {% elif order.status == 'PROCESSING' %}bg-info
+                                        {% elif order.status == 'SHIPPED' %}bg-primary
+                                        {% elif order.status == 'DELIVERED' %}bg-success
+                                        {% elif order.status == 'CANCELLED' %}bg-danger
+                                        {# Add 'REFUNDED' if you use it #}
+                                        {% else %}bg-light text-dark
+                                        {% endif %}
+                                    ">
+                                        {% if order.status == 'PENDING' %}
+                                            <i class="fas fa-hourglass-half me-1"></i> Pending
+                                        {% elif order.status == 'PROCESSING' %}
+                                            <i class="fas fa-spinner fa-spin me-1"></i> Processing
+                                        {% elif order.status == 'SHIPPED' %}
+                                            <i class="fas fa-truck me-1"></i> Shipped
+                                        {% elif order.status == 'DELIVERED' %}
+                                            <i class="fas fa-check-circle me-1"></i> Delivered
+                                        {% elif order.status == 'CANCELLED' %}
+                                            <i class="fas fa-times-circle me-1"></i> Cancelled
+                                        {# Add 'REFUNDED' if you use it #}
+                                        {% else %}
+                                            <i class="fas fa-info-circle me-1"></i> {{ order.status|capfirst }}
+                                        {% endif %}
+                                    </span>
+                                </p>
                                 <p><strong>Transaction Reference:</strong>
                                     {% if order.payment %}{{ order.payment.reference }}{% else %}<em>Unavailable</em>{% endif %}
                                 </p>
                             </div>
 
-                            <!-- Cost Breakdown -->
                             <div class="text-end">
                                 <p><strong>Subtotal:</strong> ₦{{ order.get_total_price|floatformat:2 }}</p>
                                 <p><strong>Shipping:</strong> ₦{{ order.get_shipping|floatformat:2 }}</p>
@@ -57,6 +117,9 @@
     {% else %}
         <div class="alert alert-info text-center">
             You haven't placed any orders yet.
+        </div>
+        <div class="text-center mt-3">
+             <a href="{% url 'products_list' %}" class="btn btn-primary rounded-pill">Start Shopping</a>
         </div>
     {% endif %}
 </div>

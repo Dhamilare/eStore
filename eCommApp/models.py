@@ -228,7 +228,7 @@ class OrderItem(models.Model):
 
 class Cart(models.Model):
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -244,7 +244,9 @@ class Cart(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.username if self.user else f"Session {self.session_key or self.pk}"
+        if self.user:
+            return f"Cart ({self.user.username})"
+        return f"Cart (Session {self.session_key or self.pk})"
 
     def get_total_items(self):
         return self.items.count()
@@ -260,8 +262,11 @@ class Cart(models.Model):
 
     def clean(self):
         if not self.user and not self.session_key:
-            raise ValidationError("A cart must have either a user or a session_key.")
+            raise ValidationError("A cart must be linked to a user or a session_key — both cannot be null.")
 
+    def save(self, *args, **kwargs):
+        self.full_clean()  # ensures the clean() check runs
+        super().save(*args, **kwargs)
 
 class CartItem(models.Model):
     cart = models.ForeignKey(

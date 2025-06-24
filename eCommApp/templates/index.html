@@ -5,7 +5,7 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section text-white rounded-4 shadow-lg mb-5">
+<section class="hero-section text-white rounded-4 shadow-lg mb-5" style="background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%); padding: 80px 0;">
     <div class="container text-center">
         <h1>Discover Our Latest Collection</h1>
         <p class="lead mb-4">
@@ -17,10 +17,27 @@
     </div>
 </section>
 
-<!-- Featured Products Section -->
+<!-- AJAX Flash Message Box -->
+<div id="ajax-message-box" class="alert fw-bold text-center d-none" role="alert" style="
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    width: auto;
+    min-width: 300px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    border-radius: 8px;
+    padding: 10px 20px;
+"></div>
+
+<!-- Featured Products -->
 <section class="py-section">
     <h2 class="text-center mb-5 display-5 fw-bold">Featured Products</h2>
-
     {% if featured_products %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for product in featured_products %}
@@ -34,7 +51,6 @@
                         <img src="{% static 'img/image_unavailable.png' %}" class="card-img-top" alt="Image unavailable">
                     {% endif %}
                 </a>
-
                 {% if product.stock == 0 %}
                     <span class="position-absolute top-0 end-0 badge bg-danger m-2">Out of Stock</span>
                 {% endif %}
@@ -44,7 +60,6 @@
                     <p class="card-text text-muted small">
                         {{ product.description|default:"No description."|truncatechars:100 }}
                     </p>
-
                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
                         <span class="product-price">
                             {% if product.discount_price and product.discount_price < product.price %}
@@ -54,17 +69,16 @@
                                 ₦{{ product.price }}
                             {% endif %}
                         </span>
-
                         {% if product.stock > 0 %}
-                            <button class="btn btn-primary btn-sm rounded-pill add-to-cart-btn"
-                                    data-product-id="{{ product.id }}"
-                                    data-product-name="{{ product.name }}">
-                                <i class="fas fa-shopping-cart me-2"></i> Add
-                            </button>
+                        <button class="btn btn-primary btn-sm rounded-pill add-to-cart-btn"
+                                data-product-id="{{ product.id }}"
+                                data-product-name="{{ product.name }}">
+                            <i class="fas fa-shopping-cart me-2"></i> Add
+                        </button>
                         {% else %}
-                            <button class="btn btn-secondary btn-sm rounded-pill" disabled>
-                                <i class="fas fa-ban me-2"></i> Out of Stock
-                            </button>
+                        <button class="btn btn-secondary btn-sm rounded-pill" disabled>
+                            <i class="fas fa-ban me-2"></i> Out of Stock
+                        </button>
                         {% endif %}
                     </div>
                 </div>
@@ -73,11 +87,11 @@
         {% endfor %}
     </div>
     {% else %}
-        <p class="text-center">No featured products at the moment. Check back soon!</p>
+    <p class="text-center">No featured products at the moment. Check back soon!</p>
     {% endif %}
 </section>
 
-<!-- Call-to-Action Section -->
+<!-- Call to Action -->
 <section class="py-section bg-white rounded-4 shadow-lg text-center my-section">
     <div class="container">
         <h2 class="display-5 fw-bold mb-4">Ready to find your next favorite item?</h2>
@@ -93,24 +107,32 @@
 
 {% block extra_js %}
 <script>
+// Show AJAX flash message
 function showAjaxMessage(msg, type = 'success') {
     const box = document.getElementById('ajax-message-box');
+    if (!box) return;
+
     box.textContent = msg;
-    box.style.backgroundColor = type === 'success'
-        ? 'rgba(40,167,69,0.9)'
-        : 'rgba(220,53,69,0.9)';
+    box.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+    box.style.opacity = '1';
     box.style.display = 'block';
-    setTimeout(() => box.style.display = 'none', 3000);
+
+    setTimeout(() => {
+        box.style.opacity = '0';
+        setTimeout(() => { box.style.display = 'none'; }, 500);
+    }, 3000);
 }
 
+// Add to Cart AJAX logic
 document.addEventListener('DOMContentLoaded', () => {
-    const csrftoken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
+    const csrftoken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            btn.disabled = true; // prevent double click
+            const productId = btn.dataset.productId;
+            const productName = btn.dataset.productName;
+
             fetch("{% url 'api_add_to_cart' %}", {
                 method: 'POST',
                 headers: {
@@ -118,27 +140,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     'X-CSRFToken': csrftoken
                 },
                 body: JSON.stringify({
-                    product_id: btn.dataset.productId,
+                    product_id: productId,
                     quantity: 1
                 })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showAjaxMessage(`'${btn.dataset.productName}' added to cart!`);
-
-                    const cartBadge = document.querySelector('.fa-shopping-cart + .badge');
-                    if (cartBadge) {
-                        cartBadge.textContent = data.cart_count;
-                        cartBadge.classList.remove('d-none');
+                    showAjaxMessage(`'${productName}' added to cart!`);
+                    const badge = document.querySelector('.fa-shopping-cart + .badge');
+                    if (badge) {
+                        badge.textContent = data.cart_count;
+                        badge.classList.remove('d-none');
                     }
                 } else {
-                    showAjaxMessage(data.message || 'Could not add to cart', 'error');
+                    showAjaxMessage(data.message || 'Could not add to cart.', 'danger');
                 }
+                btn.disabled = false;
             })
             .catch(err => {
-                console.error(err);
-                showAjaxMessage('Error adding to cart', 'error');
+                console.error("Fetch failed", err);
+                showAjaxMessage('Error adding to cart. Please try again.', 'danger');
+                btn.disabled = false;
             });
         });
     });

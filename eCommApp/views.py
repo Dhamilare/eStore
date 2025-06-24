@@ -23,6 +23,8 @@ from django.urls import reverse
 from django.http import Http404
 from django.contrib.auth import logout
 from django.utils.crypto import get_random_string
+from .utils import *
+from django.contrib.auth.views import LoginView
 
 
 
@@ -57,6 +59,32 @@ def send_order_confirmation_email(order):
           f"to {order.user.email if order.user else '[anonymous]'}")
 
 
+class CustomLoginView(LoginView):
+    template_name = 'accounts/login.html'
+    authentication_form = LoginForm
+
+    def form_invalid(self, form):
+        username_or_email = form.cleaned_data.get('username')
+        try:
+            if '@' in username_or_email:
+                user = User.objects.get(email=username_or_email)
+            else:
+                user = User.objects.get(username=username_or_email)
+            if not user.is_active:
+                messages.error(self.request, "Your account is not active. Please check your email for the activation link or contact support.")
+            else:
+                messages.error(self.request, "The password you entered is incorrect. Please try again.")
+
+        except User.DoesNotExist:
+            messages.error(self.request, "That username or email does not exist. Please check your credentials or create an account.")
+        except Exception as e:
+            messages.error(self.request, f"An unexpected error occurred: {e}. Please try again.")
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return reverse('home')
+
+
 def register_view(request):
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -70,7 +98,6 @@ def register_view(request):
             first_name=user.first_name,
             last_name=user.last_name
         )
-
         current_site = get_current_site(request)
         subject = "Activate Your EStore Account"
         message = render_to_string('accounts/activation_email.html', {
@@ -83,8 +110,7 @@ def register_view(request):
         try:
             send_mail(subject, '', settings.DEFAULT_FROM_EMAIL,
                       [user.email], html_message=message)
-            messages.info(request,
-                          "A confirmation email has been sent. Please activate your account.")
+            messages.success(request, "A confirmation email has been sent to your email address. Please click on the link to activate your account.")
         except Exception as e:
             print(f"SMTP error: {e}")
             messages.error(request,
@@ -96,12 +122,9 @@ def register_view(request):
 
 
 def customerLogout(request):
-    if request.method == "GET":
-        logout(request)
-        messages.success(request, "You have successfully logged out.")
-        return redirect('home')  # Or wherever you want users to land
-    else:
-        return redirect('home')
+    logout(request)
+    messages.info(request, "You have been successfully logged out.")
+    return redirect('login')
 
 def activate(request, uidb64, token):
     try:
@@ -238,52 +261,91 @@ def cart_view(request):
 
 @require_POST
 def add_to_cart_api(request):
-    data = json.loads(request.body)
-    product_id = data.get('product_id')
-    quantity = data.get('quantity', 1)
-
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-    else:
-        if not request.session.session_key:
-            request.session.create()
-        session_key = request.session.session_key
-        cart, _ = Cart.objects.get_or_create(session_key=session_key, user=None)
-
     try:
-        product = Product.objects.get(id=product_id)
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        quantity_to_add = int(data.get('quantity', 1))
+        product = get_object_or_404(Product, id=product_id)
+
+        if product.stock == 0:
+            return JsonResponse({
+                'success': False,
+                'message': f"'{product.name}' is currently out of stock."
+            }, status=400)
+
+        # Handle user or session-based cart
+        if request.user.is_authenticated:
+            cart, created_cart = Cart.objects.get_or_create(user=request.user)
+        else:
+            session_key = request.session.session_key
+            if not session_key:
+                request.session.save()
+                session_key = request.session.session_key
+            cart, created_cart = Cart.objects.get_or_create(session_key=session_key, user=None)
+
+        cart_item, created_item = CartItem.objects.get_or_create(
+            cart=cart,
+            product=product,
+            defaults={'quantity': 0}
+        )
+
+        new_cart_item_qty = cart_item.quantity + quantity_to_add
+
+        if new_cart_item_qty > product.stock:
+            return JsonResponse({
+                'success': False,
+                'message': f"Cannot add {quantity_to_add} more. Only {product.stock - cart_item.quantity} available. Total requested: {new_cart_item_qty}."
+            }, status=400)
+        
+        cart_item.quantity = new_cart_item_qty
+        cart_item.save()
+
+        current_cart_total_quantity = cart.get_total_quantity()
+        current_cart_total_cost = cart.get_total_cost()
+
+        return JsonResponse({
+            'success': True,
+            'cart_count': current_cart_total_quantity,
+            'cart_total_cost': str(current_cart_total_cost)
+        })
+
     except Product.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Product not found'}, status=404)
+        return JsonResponse({
+            'success': False,
+            'message': 'Product not found.'
+        }, status=404)
 
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    cart_item.quantity = max(1, int(quantity))
-    cart_item.price_at_addition = product.get_display_price()
-    cart_item.save()
+    except (json.JSONDecodeError, ValueError, TypeError) as e:
+        print(f"Error parsing request body or invalid data: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Invalid request data: {e}'
+        }, status=400) 
 
-    return JsonResponse({
-        'success': True,
-        'cart_count': cart.get_total_quantity(),
-    })
-
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'An unexpected error occurred.'
+        }, status=500) 
 
 @require_POST
-@login_required
 def update_cart_item_api(request):
     try:
         data = json.loads(request.body)
         new_qty = int(data.get('quantity'))
-        cart = get_object_or_404(Cart, user=request.user)
-        cart_item = get_object_or_404(CartItem, cart=cart,
-                                      product_id=data.get('product_id'))
+        product_id = data.get('product_id')
+
+        cart = get_or_create_cart(request)
+        cart_item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
 
         if new_qty <= 0:
             cart_item.delete()
         elif new_qty > cart_item.product.stock:
-            return JsonResponse(
-                {'success': False,
-                 'message': f'Only {cart_item.product.stock} available.'},
-                status=400
-            )
+            return JsonResponse({
+                'success': False,
+                'message': f'Only {cart_item.product.stock} available.'
+            }, status=400)
         else:
             cart_item.quantity = new_qty
             cart_item.save()
@@ -302,17 +364,21 @@ def update_cart_item_api(request):
 def remove_from_cart_api(request):
     try:
         data = json.loads(request.body)
-        cart = get_object_or_404(Cart, user=request.user)
-        cart_item = get_object_or_404(CartItem, cart=cart,
-                                      product_id=data.get('product_id'))
+        product_id = data.get('product_id')
+
+        cart = get_or_create_cart(request)
+        cart_item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
         cart_item.delete()
+
         return JsonResponse({
             'success': True,
             'cart_count': cart.get_total_quantity(),
             'cart_total_cost': cart.get_total_cost()
         })
+
     except (json.JSONDecodeError, CartItem.DoesNotExist):
         return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
+
 
 @method_decorator(login_required, name='dispatch')
 class CheckoutView(View):

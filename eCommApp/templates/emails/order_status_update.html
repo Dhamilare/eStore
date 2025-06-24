@@ -3,165 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-
-    .email-container {
-      max-width: 600px;
-      margin: 40px auto;
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-      color: #2f855a;
-      font-size: 24px;
-    }
-
-    h3 {
-      color: #2d3748;
-      margin-top: 30px;
-      font-size: 20px;
-    }
-
-    p {
-      font-size: 16px;
-      line-height: 1.6;
-      color: #444;
-    }
-
-    .highlight {
-      font-weight: bold;
-      color: #2d3748;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 6px 12px;
-      background-color: #ebf8ff;
-      color: #2b6cb0;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-
-    .tracking-section, .items-section {
-      margin-top: 25px;
-    }
-
-    .track-button {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 18px;
-      background-color: #3182ce;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-
-    table.items-list {
-      margin-top: 15px;
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 15px;
-    }
-
-    table.items-list th, table.items-list td {
-      border: 1px solid #e2e8f0;
-      padding: 8px 10px;
-    }
-
-    table.items-list th {
-      background-color: #f7fafc;
-      text-align: left;
-    }
-
-    .footer {
-      margin-top: 40px;
-      font-size: 13px;
-      text-align: center;
-      color: #999999;
-      border-top: 1px solid #eee;
-      padding-top: 20px;
-    }
-
-    .social-icons {
-      margin-top: 12px;
-    }
-
-    .social-icons a {
-      margin: 0 6px;
-      display: inline-block;
-    }
-
-    .social-icons img {
-      height: 24px;
-      width: 24px;
-    }
-  </style>
+  <title>Order Status Update</title>
 </head>
-<body>
-  <div class="email-container">
-    <h2>Hello {{ customer.first_name }},</h2>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+  <div class="email-container" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+    <h2 style="color: #2f855a; font-size: 24px; margin-top: 0; margin-bottom: 20px;">Hello {{ customer.first_name }},</h2>
 
-    {% if order.status == "Pending" %}
-      <p>Your order has been received and is currently marked as <span class="status">Pending</span>.</p>
-    {% elif order.status == "Processing" %}
-      <p>Great news! Your order is now <span class="status">Being Processed</span>.</p>
-    {% elif order.status == "Shipped" %}
-      <p>🚚 Your order has been <span class="status">Shipped</span> and is on its way to you.</p>
-    {% elif order.status == "Delivered" %}
-      <p>✅ Your order has been <span class="status">Delivered</span>. We hope you enjoy your purchase!</p>
+    <p style="font-size: 16px; line-height: 1.6; color: #444; margin-bottom: 15px;">
+        Regarding your order <span style="font-weight: bold; color: #2d3748;">#{{ order.id }}</span>,
+    </p>
+
+    {% if order.status == "PENDING" %}
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">Your order has been received and is currently marked as <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #fff3e0; color: #ff9800; border-radius: 4px; font-weight: 600;">Pending</span>.</p>
+    {% elif order.status == "PROCESSING" %}
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">Great news! Your order is now <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #e0f2f7; color: #2196f3; border-radius: 4px; font-weight: 600;">Being Processed</span>.</p>
+    {% elif order.status == "SHIPPED" %}
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">🚚 Your order <span style="font-weight: bold; color: #2d3748;">#{{ order.id }}</span> has been <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #e3f2fd; color: #1e88e5; border-radius: 4px; font-weight: 600;">Shipped</span> and is on its way to you.</p>
+      {% if order.tracking_number %}
+      <div class="tracking-section" style="margin-top: 25px;">
+        <p style="font-size: 16px; line-height: 1.6; color: #444;">
+          Your tracking number is: <span class="highlight" style="font-weight: bold; color: #2d3748;">{{ order.tracking_number }}</span>
+        </p>
+        <a href="{{ order.get_tracking_url }}" class="track-button" style="display: inline-block; margin-top: 10px; padding: 10px 18px; background-color: #3182ce; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold;">Track Your Order</a>
+      </div>
+      {% endif %}
+    {% elif order.status == "DELIVERED" %}
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">✅ Your order <span style="font-weight: bold; color: #2d3748;">#{{ order.id }}</span> has been <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #e8f5e9; color: #43a047; border-radius: 4px; font-weight: 600;">Delivered</span>. We hope you enjoy your purchase!</p>
+    {% elif order.status == "CANCELLED" %}
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">❌ Your order <span style="font-weight: bold; color: #2d3748;">#{{ order.id }}</span> has been <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #ffebee; color: #e53935; border-radius: 4px; font-weight: 600;">Cancelled</span>. Please contact support if you have any questions.</p>
+    {% elif order.status == "REFUNDED" %} {# Added REFUNDED status assuming you might use it #}
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">💲 A refund has been processed for your order <span style="font-weight: bold; color: #2d3748;">#{{ order.id }}</span>. Please allow 5-10 business days for it to appear in your account. Status: <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #f5f5f5; color: #757575; border-radius: 4px; font-weight: 600;">Refunded</span>.</p>
     {% else %}
-      <p>Your order status is currently: <span class="status">{{ order.status }}</span></p>
+      <p style="font-size: 16px; line-height: 1.6; color: #444;">Your order <span style="font-weight: bold; color: #2d3748;">#{{ order.id }}</span> status is currently: <span class="status" style="display: inline-block; padding: 6px 12px; background-color: #f0f0f0; color: #666; border-radius: 4px; font-weight: 600;">{{ order.status|capfirst }}</span></p>
     {% endif %}
 
-    {% if order.dhl_tracking_number %}
-    <div class="tracking-section">
-      <p><strong>Track your shipment:</strong></p>
-      <p class="highlight">{{ order.dhl_tracking_number }}</p>
-      <a href="https://www.dhl.com/global-en/home/tracking.html?tracking-id={{ order.dhl_tracking_number }}" class="track-button" target="_blank">Track via DHL</a>
-    </div>
-    {% endif %}
 
-    <div class="items-section">
-      <h3>Order Items</h3>
-      <table class="items-list">
+    <div class="items-section" style="margin-top: 25px;">
+      <h3 style="color: #2d3748; margin-top: 30px; font-size: 20px; margin-bottom: 15px;">Order Items</h3>
+      <table class="items-list" role="presentation" cellspacing="0" cellpadding="0" style="margin-top: 15px; border-collapse: collapse; width: 100%; font-size: 15px; background-color: #ffffff;">
         <thead>
           <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Price</th>
+            <th scope="col" style="border: 1px solid #e2e8f0; padding: 12px 10px; background-color: #f7fafc; text-align: left;">Product</th>
+            <th scope="col" style="border: 1px solid #e2e8f0; padding: 12px 10px; background-color: #f7fafc; text-align: left;">Qty</th>
+            <th scope="col" style="border: 1px solid #e2e8f0; padding: 12px 10px; background-color: #f7fafc; text-align: left;">Price</th>
           </tr>
         </thead>
         <tbody>
-          {% for item in order.order_items.all %}
+          {% for item in order.order_items.all %} {# Confirmed 'order_items.all' #}
           <tr>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>₦{{ item.get_final_price|floatformat:2 }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;">{{ item.product.name }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;">{{ item.quantity }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;">₦{{ item.get_final_price|floatformat:2 }}</td> {# Confirmed 'item.get_final_price' #}
           </tr>
           {% endfor %}
+          <tr>
+            <td colspan="2" style="border: 1px solid #e2e8f0; padding: 10px; text-align: right; font-weight: bold;">Subtotal:</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px; font-weight: bold;">₦{{ order.get_total_price|floatformat:2 }}</td> {# Confirmed 'order.get_total_price' #}
+          </tr>
+          <tr>
+            <td colspan="2" style="border: 1px solid #e2e8f0; padding: 10px; text-align: right; font-weight: bold;">Shipping:</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px; font-weight: bold;">₦{{ order.get_shipping|floatformat:2 }}</td> {# Confirmed 'order.get_shipping' #}
+          </tr>
+          <tr>
+            <td colspan="2" style="border: 1px solid #e2e8f0; padding: 10px; text-align: right; font-weight: bold;">Tax:</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px; font-weight: bold;">₦{{ order.get_tax|floatformat:2 }}</td> {# Confirmed 'order.get_tax' #}
+          </tr>
+          <tr>
+            <td colspan="2" style="border: 1px solid #e2e8f0; padding: 10px; text-align: right; font-weight: bold; background-color: #f7fafc;">Grand Total:</td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px; font-weight: bold; background-color: #f7fafc;">₦{{ order.get_grand_total|floatformat:2 }}</td> {# Confirmed 'order.get_grand_total' #}
+          </tr>
         </tbody>
       </table>
     </div>
 
-    <p style="margin-top: 30px;">Thank you again for shopping with us at <strong>The CakeShop</strong>. If you have any questions, feel free to contact our support team.</p>
+    <p style="margin-top: 30px; font-size: 16px; line-height: 1.6; color: #444;">Thank you again for shopping with us at <span style="font-weight: bold; color: #2d3748;">EcomStore</span>. If you have any questions, feel free to contact our support team.</p>
 
-    <div class="footer">
-      &copy; {{ current_year }} The eStore. All rights reserved.<br>
+    <div class="footer" style="margin-top: 40px; font-size: 13px; text-align: center; color: #999999; border-top: 1px solid #eee; padding-top: 20px;">
+      &copy; {{ current_year }} EcomStore. All rights reserved.<br>
       This is an automated email. Please do not reply.
-      <div class="social-icons">
-        <a href="#" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter"></a>
-        <a href="#" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
-        <a href="#" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn"></a>
+      <div class="social-icons" style="margin-top: 12px;">
+        <a href="#" target="_blank" style="margin: 0 6px; display: inline-block;"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" style="height: 24px; width: 24px;"></a>
+        <a href="#" target="_blank" style="margin: 0 6px; display: inline-block;"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" style="height: 24px; width: 24px;"></a>
+        <a href="#" target="_blank" style="margin: 0 6px; display: inline-block;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" style="height: 24px; width: 24px;"></a>
       </div>
     </div>
   </div>

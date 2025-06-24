@@ -1,8 +1,8 @@
 from django.urls import path, reverse_lazy
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import views as auth_views # Keep for password reset views
 
-from . import views
-from .forms import *
+from . import views # Your custom views (including CustomLoginView, register_view, activate)
+from .forms import * # Your forms (LoginForm, CustomPasswordResetForm, CustomSetPasswordForm)
 
 urlpatterns = [
     # === Home & Content Pages ===
@@ -15,10 +15,10 @@ urlpatterns = [
     path('cart/', views.cart_view, name='cart'),
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),
     path('products/<int:product_id>/review/', views.submit_review, name='submit_review'),
-    
+
     # === User Authentication ===
     path('accounts/login/',
-         auth_views.LoginView.as_view(
+         views.CustomLoginView.as_view(
              template_name='accounts/login.html',
              authentication_form=LoginForm
          ),
@@ -26,9 +26,8 @@ urlpatterns = [
 
     path('accounts/logout/', views.customerLogout, name='logout'),
 
-
-    path('accounts/register/', views.register_view, name='register'),
-    path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+    path('accounts/register/', views.register_view, name='register'), # Your register view
+    path('activate/<uidb64>/<token>/', views.activate, name='activate'), # Your activate view
 
     # === Password Reset Flow ===
     path('accounts/password_reset/',
