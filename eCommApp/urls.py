@@ -63,7 +63,6 @@ urlpatterns = [
     # === Order History & Tracking ===
     path('my-orders/', views.OrderHistoryView.as_view(), name='order_history'),
     path('my-orders/invoice/<int:order_id>/', views.invoice_template_view, name='invoice'),
-    path('my-orders/track/<int:pk>/', views.DHLTrackingView.as_view(), name='track_order'),
 
     # === Payments ===
     path('payment-methods/', views.PaymentMethodsView.as_view(), name='payment'),

@@ -1,12 +1,8 @@
 from django.contrib import admin
 from django.db import transaction # For atomic operations
 from django.contrib import messages # For admin messages
-from .models import (
-    Category, Product, Order, OrderItem,
-    Customer, BillingAddress, Payment,
-    Cart, CartItem, Rating
-)
-from .utils import create_dhl_shipment, send_order_status_update_email # Import the DHL utility
+from .models import *
+from .utils import *
 
 
 # --- Inline Admin Classes (for related objects within a parent's admin page) ---
@@ -55,9 +51,9 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     """Admin configuration for the Order model."""
-    list_display = ['id', 'user', 'billing_address', 'payment', 'status', 'ordered', 'ordered_date', 'dhl_tracking_number']
+    list_display = ['id', 'user', 'billing_address', 'payment', 'status', 'ordered', 'ordered_date']
     list_filter = ['ordered', 'status', 'ordered_date', 'payment__payment_gateway'] # Filter by payment gateway too
-    search_fields = ['id__iexact', 'user__username__iexact', 'dhl_tracking_number__iexact',
+    search_fields = ['id__iexact', 'user__username__iexact',
                      'billing_address__email__iexact', 'billing_address__first_name', 'billing_address__last_name']
     inlines = [OrderItemInline] # Show order items inline
     date_hierarchy = 'ordered_date' # Adds a date-based navigation
@@ -71,10 +67,6 @@ class OrderAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('user', 'billing_address', 'payment')
 
     def save_model(self, request, obj, form, change):
-        """
-        Overrides save_model to trigger DHL shipment creation and status emails.
-        This ensures admin actions also trigger the integrated logic.
-        """
         # Store old status to detect changes
         old_status = None
         if obj.pk: # If updating an existing object
@@ -85,22 +77,7 @@ class OrderAdmin(admin.ModelAdmin):
                 pass # New object, old_status remains None
 
         super().save_model(request, obj, form, change) # Save the object first
-
-        # Check for status transition to 'Shipped' and create DHL shipment if needed
-        if obj.status == 'SHIPPED' and not obj.dhl_tracking_number:
-            try:
-                # Use a transaction for the DHL API call and subsequent save
-                with transaction.atomic():
-                    tracking_data = create_dhl_shipment(obj)
-                    obj.dhl_tracking_number = tracking_data.get('trackingNumber')
-                    # Save again with the tracking number, but only update that field
-                    obj.save(update_fields=['dhl_tracking_number'])
-                    messages.success(request, f"DHL shipment created for Order #{obj.id}: {obj.dhl_tracking_number}")
-            except Exception as e:
-                messages.error(request, f"Failed to create DHL shipment for Order #{obj.id}: {e}")
-                logger.error(f"DHL shipment error for Order #{obj.id}: {e}", exc_info=True)
-                # You might want to revert the status or mark it for manual review
-
+        
         # Send status update email if status has changed
         if old_status and old_status != obj.status:
             try:
@@ -117,13 +94,12 @@ class OrderAdmin(admin.ModelAdmin):
     mark_as_processing.short_description = "Mark selected orders as Processing"
 
     def mark_as_shipped(self, request, queryset):
-        # Trigger shipment creation if status changes to Shipped and no tracking number exists
         for order in queryset:
             if order.status != Order.SHIPPED:
                 order.status = Order.SHIPPED
-                order.save() # This save will trigger the create_dhl_shipment in save_model
-        self.message_user(request, f'Selected orders marked as shipped (DHL shipment may be triggered).')
-    mark_as_shipped.short_description = "Mark selected orders as Shipped (triggers DHL if needed)"
+                order.save()
+        self.message_user(request, f'Selected orders marked as shipped.')
+    mark_as_shipped.short_description = "Mark selected orders as Shipped"
 
     def mark_as_delivered(self, request, queryset):
         updated = queryset.update(status=Order.DELIVERED)

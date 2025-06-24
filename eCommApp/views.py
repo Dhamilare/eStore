@@ -47,11 +47,6 @@ def show_ajax_message(request, message, level='success'):
     getattr(messages, level, messages.info)(request, message)
 
 
-def create_dhl_shipment(order):
-    print(f"Simulating DHL shipment creation for Order #{order.id}")
-    return {'trackingNumber': f'DHL-TRACK-{order.id}-{timezone.now():%Y%m%d%H%M%S}'}
-
-
 def send_order_status_update_email(order, new_status):
     print(f"Simulating email to {order.user.email if order.user else '[anonymous]'} "
           f"for Order #{order.id}. New status: {new_status}")
@@ -173,7 +168,6 @@ class ProductListView(ListView):
         qs = qs.order_by(ordering_map.get(sort, 'name'))
         return qs
 
-    # -----------------------------------------------------------------------
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['categories'] = Category.objects.all()
@@ -577,63 +571,6 @@ class PaymentMethodsView(LoginRequiredMixin, TemplateView):
             'grand_total': grand_total,
         })
         return context
-
-
-class DHLTrackingView(LoginRequiredMixin, DetailView):
-    model = Order
-    template_name = 'track_order.html'
-    context_object_name = 'order'
-
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        order = self.object
-        ctx['tracking_info'] = None
-
-        if order.dhl_tracking_number:
-            api_key = config('DHL_API_KEY', default='')
-            if not api_key:
-                messages.warning(self.request, 'DHL API key missing.')
-                return ctx
-
-            try:
-                url = 'https://api-eu.dhl.com/track/shipments'
-                resp = requests.get(
-                    url, headers={'DHL-API-Key': api_key},
-                    params={'trackingNumber': order.dhl_tracking_number}
-                )
-                resp.raise_for_status()
-                data = resp.json()
-
-                if data.get('shipments'):
-                    shipment = data['shipments'][0]
-                    ctx['tracking_info'] = {
-                        'status': shipment['status']['status'],
-                        'estimated_delivery': shipment.get('estimatedTimeOfDelivery'),
-                        'tracking_number': order.dhl_tracking_number,
-                        'history': [
-                            {
-                                'date': ev['timestamp'],
-                                'description': ev['status'],
-                                'location': ev.get('location', {})
-                                            .get('address', {})
-                                            .get('addressLocality', 'N/A')
-                            } for ev in shipment.get('events', [])
-                        ]
-                    }
-                    if (shipment['status']['statusCode'].lower() == 'delivered'
-                            and order.status != Order.DELIVERED):
-                        order.status = Order.DELIVERED
-                        order.save(update_fields=['status'])
-                else:
-                    messages.info(self.request, 'No tracking data found.')
-
-            except requests.exceptions.RequestException as e:
-                messages.error(self.request, f'DHL API error: {e}')
-
-        return ctx
 
 @login_required
 def submit_review(request, product_id):

@@ -11,11 +11,6 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 
 
-# --- Utility Functions ---
-def create_dhl_shipment(order):
-    print(f"Simulating DHL shipment creation for Order #{order.id}")
-    return {'trackingNumber': f'DHL-TRACK-{order.id}-{timezone.now().strftime("%Y%m%d%H%M%S")}'}
-
 def send_order_status_update_email(order, new_status):
     print(f"Email sent to {order.user.email if order.user else 'Anonymous'} for Order #{order.id}. New status: {new_status}")
 
@@ -103,7 +98,6 @@ class Rating(models.Model):
         return f'{self.product.name} - {self.value} stars by {self.user.username}'
 
 
-# --- Customer & Billing ---
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email = models.EmailField(blank=True, null=True)
@@ -150,8 +144,6 @@ class BillingAddress(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}, {self.address}, {self.city}"
 
-
-# --- Payment, Order, and Items ---
 class Payment(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -194,7 +186,6 @@ class Order(models.Model):
     ordered = models.BooleanField(default=False)
     ordered_date = models.DateTimeField(default=timezone.now)
     start_date = models.DateTimeField(auto_now_add=True)
-    dhl_tracking_number = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         ordering = ['-ordered_date']
@@ -214,31 +205,6 @@ class Order(models.Model):
 
     def get_grand_total(self):
         return self.get_total_price() + self.get_shipping() + self.get_tax()
-    
-    
-    def save(self, *args, **kwargs):
-        send_status_email_flag = False
-        is_newly_shipped = False
-
-        if self.pk:
-            old = Order.objects.get(pk=self.pk)
-            if old.status != self.status:
-                send_status_email_flag = True
-            if old.status != 'SHIPPED' and self.status == 'SHIPPED' and not self.dhl_tracking_number:
-                is_newly_shipped = True
-
-        super().save(*args, **kwargs)
-
-        if is_newly_shipped:
-            try:
-                tracking = create_dhl_shipment(self)
-                self.dhl_tracking_number = tracking.get('trackingNumber')
-                super().save(update_fields=['dhl_tracking_number'])
-            except Exception as e:
-                print(f"DHL Error for Order {self.id}: {e}")
-
-        if send_status_email_flag:
-            send_order_status_update_email(self, self.status)
 
 
 class OrderItem(models.Model):
@@ -272,7 +238,7 @@ class Cart(models.Model):
         max_length=40,
         null=True,
         blank=True,
-        db_index=True  # For faster queries
+        db_index=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
