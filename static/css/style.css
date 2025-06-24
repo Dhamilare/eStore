@@ -1,0 +1,843 @@
+    /* Custom Styles for Sleek UI/UX */
+    :root {
+        --primary-color: #6C63FF; /* A vibrant purple */
+        --secondary-color: #8D86FF; /* Lighter shade of purple */
+        --text-dark: #343a40;
+        --text-light: #6c757d;
+        --bg-light: #f8f9fa;
+        --bg-white: #ffffff;
+        --border-color: #e9ecef;
+        --shadow-light: rgba(0, 0, 0, 0.08);
+        --shadow-medium: rgba(0, 0, 0, 0.12);
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        color: var(--text-dark);
+        background-color: var(--bg-light);
+        line-height: 1.6;
+        min-height: 100vh; /* For sticky footer if needed on some pages */
+        display: flex;
+        flex-direction: column;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Poppins', sans-serif;
+        color: var(--primary-color);
+        margin-bottom: 1.25rem;
+    }
+
+    /* Navigation Bar Styling */
+    .navbar {
+        background-color: var(--bg-white);
+        box-shadow: 0 4px 12px var(--shadow-light);
+        border-bottom-left-radius: 15px; /* Fancy UI */
+        border-bottom-right-radius: 15px; /* Fancy UI */
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        font-size: 1.75rem;
+        color: var(--primary-color) !important;
+        transition: color 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+        color: var(--secondary-color) !important;
+    }
+
+    .nav-link {
+        font-weight: 500;
+        color: var(--text-dark) !important;
+        margin-right: 1.25rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .nav-link:hover {
+        color: var(--primary-color) !important;
+    }
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -5px;
+        left: 0;
+        background-color: var(--primary-color);
+        transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+        width: 100%;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        border-radius: 8px; /* Rounded corners */
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px var(--shadow-light);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        box-shadow: 0 6px 12px var(--shadow-medium);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: var(--bg-white);
+        box-shadow: 0 4px 8px var(--shadow-light);
+        transform: translateY(-2px);
+    }
+
+    /* Card Styling for products */
+    .card {
+        border: none;
+        border-radius: 15px; /* More rounded corners */
+        box-shadow: 0 6px 20px var(--shadow-light);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden; /* Ensures content respects border-radius */
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px var(--shadow-medium);
+    }
+
+    .card-img-top {
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        max-height: 200px; /* Uniform image height */
+        object-fit: cover; /* Ensures images cover the area without distortion */
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--primary-color);
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+        color: var(--text-light);
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    /* Footer Styling */
+    .footer {
+        background-color: var(--text-dark);
+        color: var(--bg-light);
+        padding: 2.5rem 0;
+        margin-top: 3rem;
+        border-top-left-radius: 15px; /* Fancy UI */
+        border-top-right-radius: 15px; /* Fancy UI */
+    }
+
+    .footer a {
+        color: var(--secondary-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .footer a:hover {
+        color: var(--primary-color);
+    }
+
+    /* Utility classes for spacing and alignment */
+    .py-section {
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+    }
+    .my-section {
+        margin-top: 5rem;
+        margin-bottom: 5rem;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 8rem 0;
+        text-align: center;
+        border-radius: 20px; /* Large rounded corners for hero */
+        margin-bottom: 3rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: white; /* Override primary-color for hero heading */
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-section p {
+        font-size: 1.25rem;
+        margin-bottom: 2.5rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Page Header (re-used for other pages) */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 4rem 0;
+        text-align: center;
+        border-radius: 15px; /* Rounded corners for page headers */
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .page-header h1 {
+        font-size: 2.75rem;
+        font-weight: 700;
+        color: white; /* Override primary-color for hero heading */
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        font-size: 1.15rem;
+        margin-bottom: 0;
+    }
+
+    /* AJAX message box style */
+    #ajax-message-box {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        display: none; /* Hidden by default */
+        z-index: 1050; /* Above Bootstrap modals */
+        font-size: 1rem;
+    }
+
+    /* Form Card Specific Styles (for login, register, password reset, contact) */
+    .form-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        padding: 3rem;
+    }
+    .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+
+    /* Cart Specific Styles */
+    .cart-item {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-light);
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    }
+
+    .cart-item-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-right: 1.5rem;
+    }
+
+    .cart-item-details {
+        flex-grow: 1;
+    }
+
+    .cart-item-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-left: auto; /* Push price to the right */
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    .quantity-control button {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%; /* Circular buttons */
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-white);
+        color: var(--text-dark);
+        transition: all 0.2s ease;
+    }
+
+    .quantity-control button:hover {
+        background-color: var(--primary-color);
+        color: var(--bg-white);
+        border-color: var(--primary-color);
+    }
+
+    .quantity-control input {
+        width: 60px;
+        text-align: center;
+        margin: 0 0.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        padding: 0.25rem 0.5rem;
+    }
+
+    .cart-summary, .order-summary-checkout {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-light);
+        padding: 2rem;
+        position: sticky;
+        top: 100px; /* Stick below navbar */
+    }
+
+    .cart-summary h4, .order-summary-checkout h4 {
+        color: var(--text-dark);
+        margin-bottom: 1.5rem;
+    }
+
+    .cart-summary .list-group-item, .order-summary-checkout .list-group-item {
+        background-color: transparent;
+        border: none;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 500;
+        color: var(--text-light);
+    }
+
+    .cart-summary .list-group-item.total, .order-summary-checkout .list-group-item.total {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    /* Empty Cart Message */
+    .empty-cart-message {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-light);
+        padding: 3rem;
+        text-align: center;
+    }
+
+    /* Checkout Specific Styles */
+    .checkout-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Stepper styles */
+    .stepper {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3rem;
+        padding: 0 1rem;
+    }
+    .stepper .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        font-weight: 500;
+        color: var(--text-light);
+        padding-bottom: 1.5rem;
+    }
+    .stepper .step::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 10px;
+        height: 2px;
+        background-color: var(--border-color);
+        z-index: 1;
+    }
+    .stepper .step:first-child::before {
+        left: 50%; /* No line before the first circle */
+    }
+    .stepper .step:last-child::before {
+        right: 50%; /* No line after the last circle */
+    }
+    .stepper .step .circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: var(--border-color);
+        color: var(--bg-white);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+    .stepper .step.active .circle {
+        background-color: var(--primary-color);
+        box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+    }
+    .stepper .step.completed .circle {
+        background-color: #28a745; /* Green for completed */
+        box-shadow: 0 0 0 5px rgba(40, 167, 69, 0.3);
+    }
+    .stepper .step.completed::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 10px;
+        height: 2px;
+        background-color: #28a745; /* Green line for completed */
+        z-index: 1;
+    }
+    .stepper .step-label {
+        position: absolute;
+        width: 100%;
+        top: 40px;
+        font-size: 0.9rem;
+    }
+    .stepper .step.active .step-label {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    /* Contact Page Specific Styles */
+    .contact-info-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-light);
+        padding: 2.5rem;
+        text-align: center;
+        height: 100%; /* Ensure cards are same height */
+    }
+    .contact-info-card i {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+    }
+    .contact-info-card h4 {
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+    .contact-info-card p {
+        font-size: 1rem;
+        color: var(--text-light);
+    }
+    .contact-info-card a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    .contact-info-card a:hover {
+        text-decoration: underline;
+    }
+    .contact-form-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        padding: 3rem;
+    }
+
+    /* Invoice Specific Styles */
+    .invoice-container {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        padding: 3rem;
+        margin-top: 5rem; /* Space from navbar */
+        margin-bottom: 3rem;
+    }
+
+    .invoice-header {
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap; /* for responsiveness */
+    }
+    .invoice-header h1 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .invoice-header .logo {
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .invoice-details .row div {
+        margin-bottom: 1.5rem;
+    }
+    .invoice-details h5 {
+        color: var(--text-dark);
+        margin-bottom: 0.75rem;
+    }
+    .invoice-details p {
+        margin-bottom: 0.25rem;
+        color: var(--text-light);
+    }
+
+    .table thead {
+        background-color: var(--primary-color);
+        color: var(--bg-white);
+    }
+    .table th {
+        font-weight: 600;
+        padding: 1rem;
+    }
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: var(--text-dark);
+    }
+    .table tbody tr:nth-child(even) {
+        background-color: var(--bg-light);
+    }
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, .05);
+    }
+
+    .invoice-summary {
+        margin-top: 2rem;
+        text-align: right;
+    }
+    .invoice-summary .list-group-item {
+        background-color: transparent;
+        border: none;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+    .invoice-summary .list-group-item.total {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        border-top: 2px solid var(--primary-color);
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    .invoice-notes {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    @media print {
+        body {
+            background-color: #fff;
+        }
+        .navbar, .footer, #ajax-message-box, .btn-print {
+            display: none !important;
+        }
+        .invoice-container {
+            box-shadow: none;
+            margin: 0;
+            border-radius: 0;
+        }
+    }
+
+    /* Order History Specific Styles */
+    .order-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-light);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .order-card h5 {
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+    .order-card .order-meta {
+        font-size: 0.95rem;
+        color: var(--text-light);
+    }
+    .order-card .order-status {
+        font-weight: 600;
+    }
+    .status-processing { color: #ffc107; } /* Warning yellow */
+    .status-shipped { color: #17a2b8; }    /* Info cyan */
+    .status-delivered { color: #28a745; }   /* Success green */
+    .status-cancelled { color: #dc3545; }   /* Danger red */
+
+    .order-item-list .list-group-item {
+        background-color: transparent;
+        border: none;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-dark);
+    }
+    .order-item-list .list-group-item img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 1rem;
+    }
+    .order-item-list .list-group-item .item-details {
+        flex-grow: 1;
+    }
+    .order-item-list .list-group-item .item-name {
+        font-weight: 500;
+    }
+    .order-item-list .list-group-item .item-price {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    /* Empty state for order history */
+    .empty-history-message {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-light);
+        padding: 3rem;
+        text-align: center;
+    }
+
+    /* Payment Page Specific Styles */
+    .payment-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+    }
+    .payment-card .card-icon {
+        font-size: 2.5rem;
+        color: var(--text-light);
+        margin-right: 1.5rem;
+    }
+    .payment-card .card-details {
+        flex-grow: 1;
+    }
+    .payment-card .card-number {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+    .payment-card .card-expiry {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+    .payment-card .actions button {
+        margin-left: 0.75rem;
+    }
+    .payment-card-add-form .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    .payment-card-add-form .form-label {
+        font-weight: 500;
+    }
+
+    /* Product Details Specific Styles */
+    .product-details-img {
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        max-width: 100%; /* Ensure responsiveness */
+        height: auto;
+    }
+
+    .product-price-large {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .quantity-input {
+        width: 80px;
+        text-align: center;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        padding: 0.5rem;
+    }
+
+    /* Carousel Indicators */
+    .carousel-indicators [data-bs-target] {
+        background-color: var(--primary-color);
+        opacity: 0.6;
+    }
+
+    .carousel-indicators .active {
+        opacity: 1;
+    }
+
+    /* Services Specific Styles */
+    .service-card {
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 6px 20px var(--shadow-light);
+        padding: 2.5rem;
+        text-align: center;
+        height: 100%; /* Ensure cards are same height */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px var(--shadow-medium);
+    }
+    .service-card .icon-circle {
+        background-color: var(--primary-color);
+        color: var(--bg-white);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .service-card h4 {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .service-card p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Call to Action for Services */
+    .services-cta {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+        color: white;
+        padding: 4rem 0;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+    .services-cta h2 {
+        color: white;
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .services-cta p {
+        font-size: 1.15rem;
+        max-width: 700px;
+        margin: 0 auto 2.5rem auto;
+    }
+
+    /* Success Page Specific Styles */
+    .success-card, .message-card { /* Combined for similar styling on success/done pages */
+        background-color: var(--bg-white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px var(--shadow-light);
+        padding: 3rem;
+        text-align: center;
+        max-width: 700px;
+        margin: 5rem auto; /* Center the card vertically and horizontally */
+    }
+    .success-card .icon-circle, .message-card .icon-circle {
+        background-color: #28a745; /* Success Green for success, overridden for info/warning */
+        color: var(--bg-white);
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 4rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+    .message-card .icon-circle {
+        background-color: #17a2b8; /* Info Cyan for email sent */
+        box-shadow: 0 0 0 10px rgba(23, 162, 184, 0.3);
+    }
+    .success-card h1 {
+        color: #28a745; /* Success Green */
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    .message-card h1 {
+        color: var(--primary-color); /* Primary color for message card heading */
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    .success-card p, .message-card p {
+        font-size: 1.15rem;
+        color: var(--text-dark);
+        margin-bottom: 1.5rem;
+    }
+    .success-card .order-details-summary {
+        background-color: var(--bg-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2.5rem;
+        text-align: left;
+    }
+    .success-card .order-details-summary p {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+    .success-card .order-details-summary strong {
+        color: var(--primary-color);
+    }
+    

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation - #{{ order.id }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 30px 10px;
+            color: #333;
+        }
+        .email-container {
+            max-width: 680px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        }
+        .email-header {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .email-header h2 {
+            margin: 0;
+            color: #27ae60;
+            font-size: 24px;
+        }
+        .email-body p {
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        .summary-box {
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .summary-box ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        .summary-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+        }
+        .summary-box li:last-child {
+            border-bottom: none;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #000;
+        }
+        .footer {
+            font-size: 13px;
+            text-align: center;
+            color: #888;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h2>Order Confirmation</h2>
+        </div>
+
+        <div class="email-body">
+            <p>Hello {{ order.billing_address.first_name }},</p>
+
+            <p>Thank you for your order! Below are your order details:</p>
+
+            <p><strong>Order ID:</strong> #{{ order.id }}</p>
+            <p><strong>Payment Reference:</strong> {{ order.payment.reference }}</p>
+
+            <div class="summary-box">
+                <p class="bold">🧾 Order Summary</p>
+                <ul>
+                    {% for item in order.items.all %}
+                        <li>{{ item.quantity }} × {{ item.item.name }} — ₦{{ item.get_final_price }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <p class="total">Total: ₦{{ order.get_total_price }}</p>
+
+            <p><strong>📍 Shipping Address:</strong><br>
+            {{ order.billing_address.address }}<br>
+            {{ order.billing_address.city }}, {{ order.billing_address.country.name }}<br>
+            <strong>Phone:</strong> {{ order.billing_address.phone }}</p>
+
+            <p>We’ll notify you once your order is shipped. If you have any questions, contact us anytime.</p>
+        </div>
+
+        <div class="footer">
+            &copy; {{ now.year }} The CakeShop. All rights reserved.<br>
+            This is an automated email. Please do not reply.
+        </div>
+    </div>
+</body>
+</html>

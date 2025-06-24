@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <section class="page-header text-white rounded-4 shadow-lg mb-5 text-center">
+        <h1><i class="fas fa-map-signs me-2"></i>Track Your Order</h1>
+        <p class="lead">Get the latest updates on your delivery status</p>
+    </section>
+
+    <div class="card shadow-sm rounded-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <strong><i class="fas fa-receipt me-2"></i>Order #{{ order.id }}</strong>
+            {% if order.created %}
+            <span class="small"><i class="fas fa-calendar-alt me-1"></i>{{ order.created|date:"M d, Y H:i" }}</span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            {% if order.dhl_tracking_number %}
+                {% if tracking_info %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><i class="fas fa-truck text-success me-2"></i><strong>Carrier:</strong> DHL</p>
+                            <p><i class="fas fa-barcode me-2"></i><strong>Tracking Number:</strong> {{ order.dhl_tracking_number }}</p>
+                            <p><i class="fas fa-clock me-2"></i><strong>Status:</strong> {{ tracking_info.status }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><i class="fas fa-map-marker-alt me-2"></i><strong>Last Location:</strong> {{ tracking_info.last_location }}</p>
+                            <p><i class="fas fa-calendar-day me-2"></i><strong>Estimated Delivery:</strong> {{ tracking_info.estimated_delivery }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5><i class="fas fa-stream me-2"></i>Tracking History</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for event in tracking_info.history %}
+                            <li class="list-group-item">
+                                <strong>{{ event.date }}</strong>: {{ event.description }}<br>
+                                <small class="text-muted"><i class="fas fa-location-arrow me-1"></i>{{ event.location }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No DHL tracking data found yet. Please check back later.
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Tracking number is not available yet. Your order might still be processing.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card-footer d-flex justify-content-between">
+            <a href="{% url 'order_history' %}" class="btn btn-outline-secondary rounded-pill">
+                <i class="fas fa-arrow-left me-2"></i>Back to Order History
+            </a>
+            {% if order.dhl_tracking_number %}
+                <a href="https://www.dhl.com/global-en/home/tracking.html?tracking-id={{ order.dhl_tracking_number }}" 
+                   target="_blank" class="btn btn-outline-primary rounded-pill">
+                    <i class="fas fa-map-marked-alt me-2"></i>Track on DHL
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

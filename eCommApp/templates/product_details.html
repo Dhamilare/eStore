@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container my-5">
+    <div id="ajax-message-box" class="alert text-white fw-bold text-center d-none" role="alert"></div>
+
+    <!-- Product Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded shadow">
+        </div>
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <p class="text-muted">{{ product.description }}</p>
+            <h4 class="text-primary">₦{{ product.price }}</h4>
+            <p class="text-muted">In stock: {{ product.stock }}</p>
+
+            <form id="add-to-cart-form">
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <div class="input-group my-3 w-50">
+                    <input type="number" name="quantity" class="form-control" min="1" max="{{ product.stock }}" value="1">
+                    <button type="submit" class="btn btn-primary rounded-end-pill">Add to Cart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Review Form -->
+    <div class="mt-5">
+        <h4>Leave a Review</h4>
+        <form method="post" action="{% url 'submit_review' product.id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating</label>
+                <select class="form-select w-25" name="rating" required>
+                    <option value="">Select</option>
+                    {% for i in "54321" %}
+                        <option value="{{ i }}">{{ i }} Star{{ i|pluralize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Comment</label>
+                <textarea class="form-control" name="comment" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-outline-success">Submit Review</button>
+        </form>
+    </div>
+
+    <!-- Reviews -->
+    {% if ratings %}
+    <div class="mt-5">
+        <h4>Customer Reviews</h4>
+        <ul class="list-group list-group-flush">
+            {% for rating in ratings %}
+                <li class="list-group-item">
+                    <strong>{{ rating.user.username }}</strong> - 
+                    <span class="text-warning">
+                        {% for _ in "x"|ljust:rating.value %}★{% endfor %}
+                    </span>
+                    <p class="mb-0">{{ rating.comment }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-5">
+        <h4>Related Products</h4>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for item in related_products %}
+            <div class="col">
+                <div class="card h-100">
+                    <a href="{% url 'product_detail' slug=item.slug %}" class="text-decoration-none text-dark">
+                        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ item.name }}</h5>
+                        <p class="card-text text-muted small">{{ item.description|truncatewords:12 }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+                            <span class="fw-bold text-primary">₦{{ item.price }}</span>
+                            <a href="{% url 'product_detail' slug=item.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- AJAX Add to Cart -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('add-to-cart-form');
+        const alertBox = document.getElementById('ajax-message-box');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const productId = form.querySelector('input[name="product_id"]').value;
+            const quantity = form.querySelector('input[name="quantity"]').value;
+
+            fetch("{% url 'api_add_to_cart' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ product_id: productId, quantity: quantity })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "{% url 'cart' %}";
+                } else {
+                    alertBox.classList.remove("d-none", "alert-success");
+                    alertBox.classList.add("alert-danger");
+                    alertBox.textContent = data.message;
+                    setTimeout(() => {
+                        alertBox.classList.add("d-none");
+                    }, 3000);
+                }
+            })
+            .catch(() => {
+                alertBox.classList.remove("d-none", "alert-success");
+                alertBox.classList.add("alert-danger");
+                alertBox.textContent = "Error adding product to cart.";
+                setTimeout(() => {
+                    alertBox.classList.add("d-none");
+                }, 3000);
+            });
+        });
+    });
+</script>
+{% endblock %}

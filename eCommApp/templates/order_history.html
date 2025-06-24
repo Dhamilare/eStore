@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Order History{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <section class="page-header text-white rounded-4 shadow-lg mb-5">
+        <div class="container text-center">
+            <h1>Order History</h1>
+            <p class="lead">Review your past purchases and their details.</p>
+        </div>
+    </section>
+
+    {% if orders %}
+        <div class="accordion" id="orderAccordion">
+            {% for order in orders %}
+                <div class="accordion-item mb-3 shadow-sm rounded-3">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                            Order #{{ order.id }} — {{ order.ordered_date|date:"M d, Y" }} — ₦{{ order.get_total_price|floatformat:2 }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#orderAccordion">
+                        <div class="accordion-body">
+
+                            <ul class="list-group mb-3">
+                                {% for item in order.order_items.all %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ item.product.name }}</strong><br>
+                                            Quantity: {{ item.quantity }} × ₦{{ item.price|floatformat:2 }}
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">₦{{ item.get_total_product_price|floatformat:2 }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="mb-3">
+                                <p><strong>Transaction Reference:</strong> 
+                                    {% if order.payment %}{{ order.payment.reference }}{% else %}<em>Unavailable</em>{% endif %}
+                                </p>
+                            </div>
+
+                            <div class="text-end fw-bold">
+                                Grand Total: ₦{{ order.get_total_price|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            You haven't placed any orders yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

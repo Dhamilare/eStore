@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .email-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #2f855a;
+      font-size: 24px;
+    }
+
+    h3 {
+      color: #2d3748;
+      margin-top: 30px;
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #444;
+    }
+
+    .highlight {
+      font-weight: bold;
+      color: #2d3748;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #ebf8ff;
+      color: #2b6cb0;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .tracking-section, .items-section {
+      margin-top: 25px;
+    }
+
+    .track-button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 18px;
+      background-color: #3182ce;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    table.items-list {
+      margin-top: 15px;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 15px;
+    }
+
+    table.items-list th, table.items-list td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 10px;
+    }
+
+    table.items-list th {
+      background-color: #f7fafc;
+      text-align: left;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 13px;
+      text-align: center;
+      color: #999999;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+
+    .social-icons {
+      margin-top: 12px;
+    }
+
+    .social-icons a {
+      margin: 0 6px;
+      display: inline-block;
+    }
+
+    .social-icons img {
+      height: 24px;
+      width: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <h2>Hello {{ customer.first_name }},</h2>
+
+    {% if order.status == "Pending" %}
+      <p>Your order has been received and is currently marked as <span class="status">Pending</span>.</p>
+    {% elif order.status == "Processing" %}
+      <p>Great news! Your order is now <span class="status">Being Processed</span>.</p>
+    {% elif order.status == "Shipped" %}
+      <p>🚚 Your order has been <span class="status">Shipped</span> and is on its way to you.</p>
+    {% elif order.status == "Delivered" %}
+      <p>✅ Your order has been <span class="status">Delivered</span>. We hope you enjoy your purchase!</p>
+    {% else %}
+      <p>Your order status is currently: <span class="status">{{ order.status }}</span></p>
+    {% endif %}
+
+    {% if order.dhl_tracking_number %}
+    <div class="tracking-section">
+      <p><strong>Track your shipment:</strong></p>
+      <p class="highlight">{{ order.dhl_tracking_number }}</p>
+      <a href="https://www.dhl.com/global-en/home/tracking.html?tracking-id={{ order.dhl_tracking_number }}" class="track-button" target="_blank">Track via DHL</a>
+    </div>
+    {% endif %}
+
+    <div class="items-section">
+      <h3>Order Items</h3>
+      <table class="items-list">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.order_items.all %}
+          <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₦{{ item.get_final_price|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top: 30px;">Thank you again for shopping with us at <strong>The CakeShop</strong>. If you have any questions, feel free to contact our support team.</p>
+
+    <div class="footer">
+      &copy; {{ current_year }} The eStore. All rights reserved.<br>
+      This is an automated email. Please do not reply.
+      <div class="social-icons">
+        <a href="#" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter"></a>
+        <a href="#" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+        <a href="#" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn"></a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

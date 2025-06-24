@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <section class="page-header text-white rounded-4 shadow-lg mb-5">
+        <div class="container text-center">
+            <h1>Checkout</h1>
+            <p class="lead">Complete your purchase securely and quickly.</p>
+        </div>
+    </section>
+
+    {% if cart_items %}
+    <form method="post" action="{% url 'checkout' %}" class="row g-4">
+        {% csrf_token %}
+
+        <!-- Billing Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 rounded-4">
+                <h4 class="mb-3">Billing Information</h4>
+                {% for field in billing_form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 rounded-4">
+                <h4 class="mb-3">Order Summary</h4>
+                <ul class="list-group mb-3">
+                    {% for item in cart_items %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <div>
+                            <h6 class="my-0">{{ item.product.name }}</h6>
+                            <small class="text-muted">Quantity: {{ item.quantity }}</small>
+                        </div>
+                        <span class="text-muted">₦{{ item.get_cost|floatformat:2 }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Subtotal</span>
+                        <strong>₦{{ subtotal|floatformat:2 }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Shipping</span>
+                        <strong>₦{{ shipping|floatformat:2 }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Tax</span>
+                        <strong>₦{{ tax|floatformat:2 }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Total</span>
+                        <strong>₦{{ total|floatformat:2 }}</strong>
+                    </li>
+                </ul>
+                <button type="submit" class="btn btn-success w-100 rounded-pill">Place Order</button>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        Your cart is empty. <a href="{% url 'products_list' %}">Browse products</a> to start shopping.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

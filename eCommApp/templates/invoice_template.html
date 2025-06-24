@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - EcomStore Order #12345</title>
+    <!-- Google Fonts: Poppins for headings, Inter for body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom Styles for Sleek UI/UX (copied from base for consistency) */
+        :root {
+            --primary-color: #6C63FF; /* A vibrant purple */
+            --secondary-color: #8D86FF; /* Lighter shade of purple */
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --border-color: #e9ecef;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary-color);
+            margin-bottom: 1.25rem;
+        }
+
+        /* Navigation Bar (simplified for invoice, or omitted if standalone printing) */
+        .navbar {
+            background-color: var(--bg-white);
+            box-shadow: 0 4px 12px var(--shadow-light);
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: var(--primary-color) !important;
+        }
+
+        /* Footer (simplified for invoice, or omitted for printing) */
+        .footer {
+            background-color: var(--text-dark);
+            color: var(--bg-light);
+            padding: 2.5rem 0;
+            margin-top: 3rem;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+
+        /* Invoice Specific Styles */
+        .invoice-container {
+            background-color: var(--bg-white);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px var(--shadow-light);
+            padding: 3rem;
+            margin-top: 5rem; /* Space from navbar */
+            margin-bottom: 3rem;
+        }
+
+        .invoice-header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* for responsiveness */
+        }
+        .invoice-header h1 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .invoice-header .logo {
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .invoice-details .row div {
+            margin-bottom: 1.5rem;
+        }
+        .invoice-details h5 {
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        .invoice-details p {
+            margin-bottom: 0.25rem;
+            color: var(--text-light);
+        }
+
+        .table thead {
+            background-color: var(--primary-color);
+            color: var(--bg-white);
+        }
+        .table th {
+            font-weight: 600;
+            padding: 1rem;
+        }
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: var(--text-dark);
+        }
+        .table tbody tr:nth-child(even) {
+            background-color: var(--bg-light);
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, .05);
+        }
+
+        .invoice-summary {
+            margin-top: 2rem;
+            text-align: right;
+        }
+        .invoice-summary .list-group-item {
+            background-color: transparent;
+            border: none;
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        .invoice-summary .list-group-item.total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            border-top: 2px solid var(--primary-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .invoice-notes {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .navbar, .footer, #ajax-message-box, .btn-print {
+                display: none !important;
+            }
+            .invoice-container {
+                box-shadow: none;
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+
+        /* AJAX message box style */
+        #ajax-message-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: none; /* Hidden by default */
+            z-index: 1050; /* Above Bootstrap modals */
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">EcomStore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="services.html">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cart.html"><i class="fas fa-shopping-cart"></i> Cart</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> Account
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="accounts/login.html">Login</a></li>
+                            <li><a class="dropdown-item" href="accounts/register.html">Register</a></li>
+                            <li><a class="dropdown-item" href="order_history.html">Order History</a></li>
+                            <li><a class="dropdown-item" href="accounts/password_reset.html">Reset Password</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <!-- Message box for AJAX responses -->
+        <div id="ajax-message-box" role="alert"></div>
+
+        <div class="invoice-container">
+            <div class="invoice-header">
+                <div>
+                    <div class="logo">EcomStore</div>
+                    <p class="mb-0 text-muted">Invoice #<span id="invoice-number">12345</span></p>
+                    <p class="mb-0 text-muted">Date: <span id="invoice-date">June 22, 2025</span></p>
+                </div>
+                <div class="text-end">
+                    <h1>INVOICE</h1>
+                    <button class="btn btn-outline-primary btn-print rounded-pill mt-3" onclick="window.print()"><i class="fas fa-print me-2"></i> Print Invoice</button>
+                </div>
+            </div>
+
+            <div class="row invoice-details">
+                <div class="col-md-6">
+                    <h5>Billed To:</h5>
+                    <p id="billed-to-name">John Doe</p>
+                    <p id="billed-to-address1">123 Main Street</p>
+                    <p id="billed-to-address2">Apt 4B</p>
+                    <p id="billed-to-city-state-zip">Springfield, IL 62704</p>
+                    <p id="billed-to-country">United States</p>
+                    <p id="billed-to-email">john.doe@example.com</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Shipped To:</h5>
+                    <p id="shipped-to-name">John Doe</p>
+                    <p id="shipped-to-address1">123 Main Street</p>
+                    <p id="shipped-to-address2">Apt 4B</p>
+                    <p id="shipped-to-city-state-zip">Springfield, IL 62704</p>
+                    <p id="shipped-to-country">United States</p>
+                    <p id="shipped-to-phone">+1 (555) 123-4567</p>
+                </div>
+            </div>
+
+            <h4 class="mt-4 mb-3">Order Items</h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover rounded-3 overflow-hidden">
+                    <thead class="text-white">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Unit Price</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items">
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>Stylish Headphones</td>
+                            <td>1</td>
+                            <td>$99.99</td>
+                            <td>$99.99</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2</th>
+                            <td>Smartwatch Pro</td>
+                            <td>1</td>
+                            <td>$199.99</td>
+                            <td>$199.99</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">3</th>
+                            <td>Wireless Earbuds</td>
+                            <td>2</td>
+                            <td>$79.99</td>
+                            <td>$159.98</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row justify-content-end">
+                <div class="col-md-5">
+                    <ul class="list-group list-group-flush invoice-summary">
+                        <li class="list-group-item">Subtotal <span id="invoice-subtotal">$459.96</span></li>
+                        <li class="list-group-item">Shipping <span id="invoice-shipping">$10.00</span></li>
+                        <li class="list-group-item">Tax (8%) <span id="invoice-tax">$36.79</span></li>
+                        <li class="list-group-item total">Grand Total <span id="invoice-grand-total">$506.75</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="invoice-notes mt-5">
+                <p><strong>Payment Method:</strong> Credit Card (**** **** **** 1234)</p>
+                <p>Thank you for your business! We appreciate your support and look forward to serving you again.</p>
+                <p class="text-center mt-4">For any inquiries, please contact <a href="mailto:support@ecomstore.com">support@ecomstore.com</a></p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="services.html">Services</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="order_history.html">Order History</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+            <hr class="my-4 border-light opacity-25">
+            <p class="mb-0">&copy; 2025 EcomStore. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global function to display AJAX messages
+        function showAjaxMessage(message, type = 'success') {
+            const msgBox = document.getElementById('ajax-message-box');
+            msgBox.textContent = message;
+            // Basic styling based on type (can be expanded)
+            if (type === 'success') {
+                msgBox.style.backgroundColor = 'rgba(40, 167, 69, 0.9)'; // Green
+            } else if (type === 'error') {
+                msgBox.style.backgroundColor = 'rgba(220, 53, 69, 0.9)'; // Red
+            } else {
+                msgBox.style.backgroundColor = 'rgba(0, 0, 0, 0.8)'; // Default dark
+            }
+            msgBox.style.display = 'block';
+            setTimeout(() => {
+                msgBox.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate fetching order data for the invoice
+            const orderData = {
+                invoiceNumber: '12345',
+                invoiceDate: 'June 22, 2025',
+                billedTo: {
+                    name: 'John Doe',
+                    address1: '123 Main Street',
+                    address2: 'Apt 4B',
+                    cityStateZip: 'Springfield, IL 62704',
+                    country: 'United States',
+                    email: 'john.doe@example.com'
+                },
+                shippedTo: {
+                    name: 'John Doe',
+                    address1: '123 Main Street',
+                    address2: 'Apt 4B',
+                    cityStateZip: 'Springfield, IL 62704',
+                    country: 'United States',
+                    phone: '+1 (555) 123-4567'
+                },
+                items: [
+                    { name: 'Stylish Headphones', quantity: 1, unitPrice: 99.99 },
+                    { name: 'Smartwatch Pro', quantity: 1, unitPrice: 199.99 },
+                    { name: 'Wireless Earbuds', quantity: 2, unitPrice: 79.99 }
+                ],
+                shipping: 10.00,
+                taxRate: 0.08,
+                paymentMethod: 'Credit Card (**** **** **** 1234)'
+            };
+
+            // Populate invoice details
+            document.getElementById('invoice-number').textContent = orderData.invoiceNumber;
+            document.getElementById('invoice-date').textContent = orderData.invoiceDate;
+
+            document.getElementById('billed-to-name').textContent = orderData.billedTo.name;
+            document.getElementById('billed-to-address1').textContent = orderData.billedTo.address1;
+            document.getElementById('billed-to-address2').textContent = orderData.billedTo.address2;
+            document.getElementById('billed-to-city-state-zip').textContent = orderData.billedTo.cityStateZip;
+            document.getElementById('billed-to-country').textContent = orderData.billedTo.country;
+            document.getElementById('billed-to-email').textContent = orderData.billedTo.email;
+
+            document.getElementById('shipped-to-name').textContent = orderData.shippedTo.name;
+            document.getElementById('shipped-to-address1').textContent = orderData.shippedTo.address1;
+            document.getElementById('shipped-to-address2').textContent = orderData.shippedTo.address2;
+            document.getElementById('shipped-to-city-state-zip').textContent = orderData.shippedTo.cityStateZip;
+            document.getElementById('shipped-to-country').textContent = orderData.shippedTo.country;
+            document.getElementById('shipped-to-phone').textContent = orderData.shippedTo.phone;
+
+            const invoiceItemsTable = document.getElementById('invoice-items');
+            invoiceItemsTable.innerHTML = ''; // Clear existing
+            let subtotal = 0;
+            orderData.items.forEach((item, index) => {
+                const itemTotal = item.quantity * item.unitPrice;
+                subtotal += itemTotal;
+                const row = `
+                    <tr>
+                        <th scope="row">${index + 1}</th>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>$${item.unitPrice.toFixed(2)}</td>
+                        <td>$${itemTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+                invoiceItemsTable.insertAdjacentHTML('beforeend', row);
+            });
+
+            const tax = subtotal * orderData.taxRate;
+            const grandTotal = subtotal + orderData.shipping + tax;
+
+            document.getElementById('invoice-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('invoice-shipping').textContent = `$${orderData.shipping.toFixed(2)}`;
+            document.getElementById('invoice-tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('invoice-grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+        });
+    </script>
+</body>
+</html>
