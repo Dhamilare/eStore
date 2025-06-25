@@ -64,7 +64,7 @@ urlpatterns = [
     path('my-orders/invoice/<int:order_id>/', views.invoice_template_view, name='invoice'),
 
     # === Payments ===
-    path('payment-methods/', views.PaymentMethodsView.as_view(), name='payment'),
+    path('payment/', views.PaymentMethodsView.as_view(), name='payment'),
     path('verify-payment/', views.verifyPayment, name='verifyPayment'),
     path('success/', views.success_view, name='success'),
 

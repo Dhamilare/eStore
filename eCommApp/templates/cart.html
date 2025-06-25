@@ -1,190 +1,289 @@
 {% extends 'base.html' %}
+{% load static %} 
 {% load custom_filters %}
-{% load static %}
+
+{% block title %}EcomStore - Your Cart{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <h2 class="mb-4 text-center">Your Shopping Cart</h2>
+    <section class="page-header text-white rounded-4 shadow-lg mb-5">
+        <div class="container text-center">
+            <h1>Your Shopping Cart</h1>
+            <p class="lead">Review your items before proceeding to checkout.</p>
+        </div>
+    </section>
 
-    {% if empty_cart %}
-        <div class="alert alert-info text-center rounded-pill shadow-sm">
-            Your cart is currently empty.
-        </div>
-        <div class="text-center mt-4"> {# Added mt-4 for spacing #}
-            <a href="{% url 'products_list' %}" class="btn btn-primary rounded-pill me-2">Browse Products</a>
-        </div>
-    {% else %}
-        <div class="table-responsive mb-5">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col">Product</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Subtotal</th>
-                        <th scope="col">Remove</th>
-                    </tr>
-                </thead>
-                <tbody>
+    <div class="row">
+        <div class="col-lg-8">
+            {% if empty_cart %}
+                <div class="empty-cart-message">
+                    <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+                    <h2 class="mb-3 text-dark">Your cart is empty!</h2>
+                    <p class="lead text-muted">Looks like you haven't added anything to your cart yet.</p>
+                    <a href="{% url 'products_list' %}" class="btn btn-primary btn-lg rounded-pill mt-3 px-5">Start Shopping</a>
+                </div>
+            {% else %}
+                <div class="card p-4 shadow-sm mb-4">
+                    <h3 class="mb-4 text-primary">Items in Your Cart ({{ cart.get_total_quantity }} items)</h3>
                     {% for item in cart_items %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                {% if item.product.image %}
-                                    <img src="{{ item.product.image.url }}" class="rounded me-2" width="60" height="60" alt="{{ item.product.name }}">
-                                {% else %}
-                                    <img src="{% static 'img/image_unavailable.png' %}" class="rounded me-2" width="60" height="60" alt="Image unavailable">
-                                {% endif %}
-                                <a href="{% url 'product_detail' slug=item.product.slug %}" class="text-decoration-none">{{ item.product.name }}</a>
+                        <div class="cart-item">
+                            <img src="{{ item.product.image.url|default:'https://placehold.co/100x100/6C63FF/ffffff?text=Product' }}" 
+                                 class="cart-item-img" 
+                                 alt="{{ item.product.name }}"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/100x100/8D86FF/ffffff?text=Image+Unavailable';">
+                            <div class="cart-item-details">
+                                <h5 class="mb-1">{{ item.product.name }}</h5>
+                                <p class="text-muted small mb-2">Price: ₦{{ item.price_at_addition|floatformat:2 }}</p>
+                                <div class="quantity-control">
+                                    <button class="btn btn-sm btn-outline-secondary rounded-circle decrease-quantity" 
+                                            data-product-id="{{ item.product.id }}">-</button>
+                                    <input type="text" class="form-control form-control-sm quantity-input text-center" 
+                                           value="{{ item.quantity }}" readonly 
+                                           data-product-id="{{ item.product.id }}"
+                                           data-max-stock="{{ item.product.stock }}"> {# Add max-stock for JS validation #}
+                                    <button class="btn btn-sm btn-outline-secondary rounded-circle increase-quantity" 
+                                            data-product-id="{{ item.product.id }}">+</button>
+                                    <button class="btn btn-sm btn-outline-danger ms-3 remove-item" 
+                                            data-product-id="{{ item.product.id }}"><i class="fas fa-trash-alt"></i></button>
+                                </div>
                             </div>
-                        </td>
-                        <td>₦{{ item.price_at_addition }}</td>
-                        <td>
-                            <input type="number" class="form-control form-control-sm w-auto quantity-input" data-product-id="{{ item.product.id }}" min="1" max="{{ item.product.stock }}" value="{{ item.quantity }}">
-                        </td>
-                        <td>₦{{ item.quantity|multiply:item.price_at_addition|floatformat:2 }}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger remove-from-cart-btn" data-product-id="{{ item.product.id }}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                            <span class="cart-item-price">₦{{ item.get_cost|floatformat:2 }}</span>
+                        </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            {% endif %}
         </div>
 
-        <div class="row justify-content-end">
-            <div class="col-md-6">
-                <div class="card shadow-sm rounded-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Cart Summary</h5>
-                        <ul class="list-unstyled mb-3">
-                            <li class="d-flex justify-content-between"><span>Subtotal:</span><strong>₦{{ subtotal|floatformat:2 }}</strong></li>
-                            <li class="d-flex justify-content-between"><span>Shipping:</span><strong>₦{{ shipping|floatformat:2 }}</strong></li>
-                            <li class="d-flex justify-content-between"><span>Tax:</span><strong>₦{{ tax|floatformat:2 }}</strong></li>
-                            <li class="d-flex justify-content-between border-top pt-2"><span>Total:</span><strong>₦{{ total|floatformat:2 }}</strong></li>
-                        </ul>
-                        <a href="{% url 'checkout' %}" class="btn btn-success w-100 rounded-pill mb-2">Proceed to Checkout</a>
-                        {# NEW: Continue Shopping button below checkout #}
-                        <a href="{% url 'products_list' %}" class="btn btn-outline-secondary w-100 rounded-pill">Continue Shopping</a>
-                    </div>
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h4 class="mb-4">Order Summary</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Subtotal <span>₦{{ subtotal|floatformat:2 }}</span></li>
+                    <li class="list-group-item">Shipping <span>₦{{ shipping|floatformat:2 }}</span></li>
+                    {# Access tax rate from 'settings' context variable #}
+                    <li class="list-group-item">Tax ({{ settings.TAX_RATE|multiply:100|floatformat:0 }}%) <span>₦{{ tax|floatformat:2 }}</span></li>
+                    <li class="list-group-item total">Total <span>₦{{ total|floatformat:2 }}</span></li>
+                </ul>
+                <div class="d-grid mt-4">
+                    {% if not empty_cart %}
+                        <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg rounded-pill mb-2">Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i></a>
+                    {% endif %}
+                    <a href="{% url 'products_list' %}" class="btn btn-outline-primary btn-lg rounded-pill">Continue Shopping</a>
                 </div>
             </div>
         </div>
+    </div>
+
+    {% if recommended_products %}
+    <section class="my-5">
+        <h2 class="text-center mb-5 display-5 fw-bold text-primary">You May Also Like</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for product in recommended_products %}
+            <div class="col">
+                <div class="card h-100">
+                    <a href="{% url 'product_detail' product.slug %}" class="text-decoration-none text-dark">
+                        <img src="{{ product.image.url|default:'https://placehold.co/600x400/8D86FF/ffffff?text=Product+Image' }}" 
+                             class="card-img-top" 
+                             alt="{{ product.name }}"
+                             onerror="this.onerror=null;this.src='https://placehold.co/600x400/8D86FF/ffffff?text=Image+Unavailable';">
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-muted small">{{ product.description|truncatechars:80 }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
+                            <span class="product-price">₦{{ product.get_display_price|floatformat:2 }}</span>
+                            <button class="btn btn-primary btn-sm rounded-pill add-to-cart-btn" 
+                                    data-product-id="{{ product.id }}" 
+                                    data-product-name="{{ product.name }}">
+                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
     {% endif %}
-</div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    // AJAX quantity update and remove handlers
-    document.addEventListener('DOMContentLoaded', () => {
-        // CSRF token retrieval - this should ideally be in base.html for global use
-        const csrftoken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    // Ensure getCookie and showAjaxMessage are defined in main.js (loaded via base.html)
+    // If not, you'd need to include their definitions here or load main.js first.
 
-        document.querySelectorAll('.remove-from-cart-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const productId = btn.dataset.productId;
-                fetch('{% url "api_remove_from_cart" %}', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken}, // Use csrftoken variable
-                    body: JSON.stringify({ product_id: productId })
-                }).then(resp => {
-                    if (!resp.ok) {
-                        return resp.json().then(errorData => {
-                            console.error('Remove API Error:', errorData);
-                            // Assuming showAjaxMessage is available from base.html
-                            if (typeof showAjaxMessage === 'function') {
-                                showAjaxMessage(errorData.message || 'Error removing item.', 'danger');
-                            }
-                            throw new Error(errorData.message || 'Error removing item.');
-                        });
-                    }
-                    return resp.json();
-                }).then(data => {
-                    // Assuming showAjaxMessage is available from base.html
+    document.addEventListener('DOMContentLoaded', () => {
+        // Event listeners for quantity control buttons in cart
+        document.querySelectorAll('.increase-quantity').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const quantityInput = this.previousElementSibling;
+                let currentQuantity = parseInt(quantityInput.value);
+                let maxStock = parseInt(quantityInput.dataset.maxStock);
+
+                if (currentQuantity < maxStock) {
+                    let newQuantity = currentQuantity + 1;
+                    updateCartItemQuantity(productId, newQuantity);
+                } else {
                     if (typeof showAjaxMessage === 'function') {
-                        showAjaxMessage(data.message || 'Item removed from cart!', 'success');
+                        showAjaxMessage(`Only ${maxStock} items available in stock.`, 'info');
                     }
-                    // Update cart count badge if it exists (from base.html script)
-                    const badge = document.querySelector('.fa-shopping-cart + .badge');
-                    if (badge && data.cart_count !== undefined) {
-                        badge.textContent = data.cart_count;
-                        if (data.cart_count == 0) {
-                            badge.classList.add('d-none');
-                        }
-                    }
-                    location.reload(); // Reload the page to reflect cart changes
-                }).catch(error => {
-                    console.error('Fetch error:', error);
-                    if (typeof showAjaxMessage === 'function') {
-                        showAjaxMessage('Network error or unexpected issue.', 'danger');
-                    }
-                });
+                }
             });
         });
 
-        document.querySelectorAll('.quantity-input').forEach(input => {
-            input.addEventListener('change', () => {
-                const productId = input.dataset.productId;
-                const quantity = parseInt(input.value); // Ensure quantity is an integer
-                const maxStock = parseInt(input.getAttribute('max')); // Get max stock from attribute
+        document.querySelectorAll('.decrease-quantity').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const quantityInput = this.nextElementSibling;
+                let currentQuantity = parseInt(quantityInput.value);
+                
+                let newQuantity = currentQuantity - 1;
+                updateCartItemQuantity(productId, newQuantity); // This will handle removing if newQuantity is 0
+            });
+        });
 
-                if (isNaN(quantity) || quantity < 1) {
-                    input.value = input.dataset.originalValue || 1; // Revert to previous value or 1
-                    if (typeof showAjaxMessage === 'function') {
-                        showAjaxMessage('Quantity must be at least 1.', 'danger');
-                    }
-                    return;
-                }
-                if (quantity > maxStock) {
-                    input.value = maxStock; // Set to max stock if exceeded
-                     if (typeof showAjaxMessage === 'function') {
-                        showAjaxMessage(`Only ${maxStock} items available in stock.`, 'danger');
-                    }
-                    // Do not return here, proceed with maxStock value
-                }
+        // Event listener for the "Remove" button
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                removeCartItem(productId);
+            });
+        });
 
-                // Store original value in case of invalid input
-                input.dataset.originalValue = input.value;
-
-
-                fetch('{% url "api_update_cart_item" %}', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken}, // Use csrftoken variable
-                    body: JSON.stringify({ product_id: productId, quantity: quantity })
-                }).then(resp => {
-                    if (!resp.ok) {
-                        return resp.json().then(errorData => {
-                            console.error('Update API Error:', errorData);
-                            if (typeof showAjaxMessage === 'function') {
-                                showAjaxMessage(errorData.message || 'Error updating quantity.', 'danger');
-                            }
-                            throw new Error(errorData.message || 'Error updating quantity.');
-                        });
-                    }
-                    return resp.json();
-                }).then(data => {
-                    // Assuming showAjaxMessage is available from base.html
+        // Function to update cart item quantity via AJAX
+        function updateCartItemQuantity(productId, quantity) {
+            fetch('{% url "api_update_cart_item" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Assumes getCookie is defined in main.js
+                },
+                body: JSON.stringify({ product_id: productId, quantity: quantity })
+            })
+            .then(response => {
+                // Always parse JSON even if response.ok is false, to get error messages
+                return response.json().then(data => ({ status: response.status, ok: response.ok, data: data }));
+            })
+            .then(({ status, ok, data }) => {
+                if (ok) {
                     if (typeof showAjaxMessage === 'function') {
                         showAjaxMessage(data.message || 'Cart updated successfully!', 'success');
                     }
-                     // Update cart count badge if it exists (from base.html script)
+                    // Update cart count badge if it exists
                     const badge = document.querySelector('.fa-shopping-cart + .badge');
                     if (badge && data.cart_count !== undefined) {
                         badge.textContent = data.cart_count;
                         if (data.cart_count == 0) {
                             badge.classList.add('d-none');
+                        } else {
+                            badge.classList.remove('d-none');
                         }
                     }
-                    location.reload(); // Reload the page to reflect all changes (subtotal, total)
-                }).catch(error => {
-                    console.error('Fetch error:', error);
+                    location.reload(); // Reload to reflect updated totals and item removal/changes
+                } else {
                     if (typeof showAjaxMessage === 'function') {
-                        showAjaxMessage('Network error or unexpected issue.', 'danger');
+                        showAjaxMessage(data.message || 'Error updating quantity.', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error in updateCartItemQuantity:', error);
+                if (typeof showAjaxMessage === 'function') {
+                    showAjaxMessage('Network error or unexpected issue.', 'error');
+                }
+            });
+        }
+
+        // Function to remove cart item via AJAX
+        function removeCartItem(productId) {
+            fetch('{% url "api_remove_from_cart" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Assumes getCookie is defined in main.js
+                },
+                body: JSON.stringify({ product_id: productId })
+            })
+            .then(response => {
+                return response.json().then(data => ({ status: response.status, ok: response.ok, data: data }));
+            })
+            .then(({ status, ok, data }) => {
+                if (ok) {
+                    if (typeof showAjaxMessage === 'function') {
+                        showAjaxMessage(data.message || 'Item removed from cart!', 'success');
+                    }
+                    const badge = document.querySelector('.fa-shopping-cart + .badge');
+                    if (badge && data.cart_count !== undefined) {
+                        badge.textContent = data.cart_count;
+                        if (data.cart_count == 0) {
+                            badge.classList.add('d-none');
+                        } else {
+                            badge.classList.remove('d-none');
+                        }
+                    }
+                    location.reload(); // Reload to reflect changes
+                } else {
+                    if (typeof showAjaxMessage === 'function') {
+                        showAjaxMessage(data.message || 'Error removing item.', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error in removeCartItem:', error);
+                if (typeof showAjaxMessage === 'function') {
+                    showAjaxMessage('Network error or unexpected issue.', 'error');
+                }
+            });
+        }
+
+        // Add to Cart functionality for Recommended Products
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const productName = this.dataset.productName || 'Product';
+                const quantity = 1; // Default quantity for recommended products
+
+                fetch('{% url "api_add_to_cart" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ product_id: productId, quantity: quantity })
+                })
+                .then(response => {
+                    return response.json().then(data => ({ status: response.status, ok: response.ok, data: data }));
+                })
+                .then(({ status, ok, data }) => {
+                    if (ok) {
+                        if (typeof showAjaxMessage === 'function') {
+                            showAjaxMessage(data.message, 'success');
+                        }
+                        // Update cart count badge
+                        const badge = document.querySelector('.fa-shopping-cart + .badge');
+                        if (badge && data.cart_count !== undefined) {
+                            badge.textContent = data.cart_count;
+                            if (data.cart_count == 0) {
+                                badge.classList.add('d-none');
+                            } else {
+                                badge.classList.remove('d-none');
+                            }
+                        }
+                        location.reload(); // Reload the page to show item in cart and recalculate totals
+                    } else {
+                        if (typeof showAjaxMessage === 'function') {
+                            showAjaxMessage(data.message, 'error');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding to cart from recommended section:', error);
+                    if (typeof showAjaxMessage === 'function') {
+                        showAjaxMessage('Network error or unexpected issue.', 'error');
                     }
                 });
             });
-             // Set initial originalValue for input fields
-            input.dataset.originalValue = input.value;
         });
     });
 </script>

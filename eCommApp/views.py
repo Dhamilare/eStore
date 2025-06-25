@@ -233,6 +233,10 @@ def cart_view(request):
     tax = subtotal * settings.TAX_RATE
     total = subtotal + shipping + tax
 
+    categories = items.values_list('product__category', flat=True).distinct()
+    exclude_ids = items.values_list('product__id', flat=True)
+    recommended = Product.objects.filter(category__in=categories).exclude(id__in=exclude_ids).distinct()[:6]
+
     return render(
         request,
         'cart.html',
@@ -243,6 +247,7 @@ def cart_view(request):
             'shipping': shipping,
             'tax': tax,
             'total': total,
+            'recommended_products': recommended,
             'empty_cart': not items.exists(),
         }
     )
