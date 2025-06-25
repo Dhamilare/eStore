@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="container my-5">
-    <!-- Flash message box -->
     <div id="ajax-message-box" class="alert fw-bold text-center d-none" role="alert"></div>
 
     <!-- Page Header -->
@@ -22,21 +21,16 @@
             <form method="get" class="card p-3 shadow-sm">
                 <h5 class="fw-bold mb-3">Filter Products</h5>
 
-                <!-- Category -->
                 <div class="mb-3">
                     <label class="form-label">Category</label>
                     <select class="form-select" name="category">
                         <option value="">All Categories</option>
                         {% for category in categories %}
-                            <option value="{{ category.slug }}"
-                                {% if selected_category and category.slug == selected_category.slug %}selected{% endif %}>
-                                {{ category.name }}
-                            </option>
+                            <option value="{{ category.slug }}" {% if selected_category and category.slug == selected_category.slug %}selected{% endif %}>{{ category.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <!-- Price Range -->
                 <div class="mb-3">
                     <label class="form-label">Min Price (₦)</label>
                     <input type="number" class="form-control" name="min_price" min="0" value="{{ min_price_param }}">
@@ -47,7 +41,6 @@
                     <input type="number" class="form-control" name="max_price" min="0" value="{{ max_price_param }}">
                 </div>
 
-                <!-- Sort By -->
                 <div class="mb-3">
                     <label class="form-label">Sort By</label>
                     <select name="sort_by" class="form-select">
@@ -76,23 +69,28 @@
                                     <h5 class="card-title">{{ product.name }}</h5>
                                     <p class="card-text text-muted small">{{ product.description|truncatechars:100 }}</p>
 
-                                    {% if product.stock > 0 %}
-                                        <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
-                                            <span class="product-price fw-bold text-primary">₦{{ product.price }}</span>
+                                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
+                                        <span class="product-price fw-bold text-primary">
+                                            {% if product.discount_price and product.discount_price < product.price %}
+                                                <del class="text-muted small">₦{{ product.price }}</del>
+                                                <span class="ms-1">₦{{ product.discount_price }}</span>
+                                            {% else %}
+                                                ₦{{ product.price }}
+                                            {% endif %}
+                                        </span>
+
+                                        {% if product.stock > 0 %}
                                             <button class="btn btn-primary btn-sm rounded-pill add-to-cart-btn"
                                                     data-product-id="{{ product.id }}"
                                                     data-product-name="{{ product.name }}">
                                                 <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                                             </button>
-                                        </div>
-                                    {% else %}
-                                        <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
-                                            <span class="badge bg-danger">Out of Stock</span>
+                                        {% else %}
                                             <button class="btn btn-secondary btn-sm rounded-pill" disabled>
                                                 <i class="fas fa-times-circle me-2"></i>Unavailable
                                             </button>
-                                        </div>
-                                    {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -112,9 +110,7 @@
                                 </li>
                             {% endif %}
 
-                            <li class="page-item active">
-                                <span class="page-link">{{ page_obj.number }}</span>
-                            </li>
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
 
                             {% if page_obj.has_next %}
                                 <li class="page-item">
