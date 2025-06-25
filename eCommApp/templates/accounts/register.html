@@ -1,71 +1,94 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load widget_tweaks %}
+
+{% block title %}Create Account - EcomStore{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-header bg-success text-white text-center">
-          <h4><i class="fa fa-user-plus"></i> Create Account</h4>
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7 col-xl-6">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                <div class="card-header text-white text-center py-4 rounded-top-4" style="background: linear-gradient(135deg, #6C757D 0%, #343A40 100%); border-bottom: none;">
+                    <h4 class="mb-0 fs-3 fw-bold"><i class="fas fa-user-plus me-2"></i> Create Account</h4>
+                    <p class="mb-0 text-white-75">Join EcomStore to unlock exclusive features</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    {% if messages %}
+                        <div class="messages mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label for="id_first_name" class="form-label text-muted">First Name</label>
+                                {{ form.first_name|add_class:"form-control form-control-lg rounded-pill"|attr:"placeholder:Enter your first name"|attr:"aria-label:First Name" }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label for="id_last_name" class="form-label text-muted">Last Name</label>
+                                {{ form.last_name|add_class:"form-control form-control-lg rounded-pill"|attr:"placeholder:Enter your last name"|attr:"aria-label:Last Name" }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label text-muted">Username</label>
+                            {{ form.username|add_class:"form-control form-control-lg rounded-pill"|attr:"placeholder:Choose a username"|attr:"aria-label:Username" }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">{{ form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label text-muted">Email</label>
+                            {{ form.email|add_class:"form-control form-control-lg rounded-pill"|attr:"placeholder:Enter your email address"|attr:"aria-label:Email" }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label text-muted">Password</label>
+                            {{ form.password1|add_class:"form-control form-control-lg rounded-pill"|attr:"placeholder:Create a password"|attr:"aria-label:Password" }}
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">{{ form.password1.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_password2" class="form-label text-muted">Confirm Password</label>
+                            {{ form.password2|add_class:"form-control form-control-lg rounded-pill"|attr:"placeholder:Re-enter your password"|attr:"aria-label:Confirm Password" }}
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">{{ form.password2.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="submit" class="btn btn-lg rounded-pill text-white fw-bold" style="background-color: #343A40; border-color: #343A40;">Register</button>
+                        </div>
+
+                        <div class="mt-3 text-center fs-6">
+                            Already have an account? <a href="{% url 'login' %}" class="text-decoration-none text-primary fw-medium">Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-          <form method="post" action="{% url 'register' %}">
-            {% csrf_token %}
-            {% if form.non_field_errors %}
-              <div class="alert alert-danger">
-                {{ form.non_field_errors }}
-              </div>
-            {% endif %}
-
-            <div class="row">
-              <div class="mb-3 col-md-6">
-                <label for="id_first_name" class="form-label">First Name</label>
-                {{ form.first_name|add_class:"form-control" }}
-                {{ form.first_name.errors }}
-              </div>
-              <div class="mb-3 col-md-6">
-                <label for="id_last_name" class="form-label">Last Name</label>
-                {{ form.last_name|add_class:"form-control" }}
-                {{ form.last_name.errors }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="id_username" class="form-label">Username</label>
-              {{ form.username|add_class:"form-control" }}
-              {{ form.username.errors }}
-            </div>
-
-            <div class="mb-3">
-              <label for="id_email" class="form-label">Email</label>
-              {{ form.email|add_class:"form-control" }}
-              {{ form.email.errors }}
-            </div>
-
-            <div class="mb-3">
-              <label for="id_password1" class="form-label">Password</label>
-              {{ form.password1|add_class:"form-control" }}
-              {{ form.password1.errors }}
-            </div>
-
-            <div class="mb-3">
-              <label for="id_password2" class="form-label">Confirm Password</label>
-              {{ form.password2|add_class:"form-control" }}
-              {{ form.password2.errors }}
-            </div>
-
-            <div class="d-grid">
-              <button type="submit" class="btn btn-success">Register</button>
-            </div>
-
-            <div class="mt-3 text-center">
-              Already have an account? <a href="{% url 'login' %}">Login</a>
-            </div>
-          </form>
-        </div>
-      </div>
     </div>
-  </div>
 </div>
 {% endblock %}

@@ -17,7 +17,7 @@
             <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;">Thank you for your order! Your purchase is confirmed, and we're getting it ready for you. Below are your order details:</p>
 
             <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;"><strong style="font-weight: bold;">Order ID:</strong> #<span style="color: #27ae60; font-weight: bold;">{{ order.id }}</span></p>
-            {% if order.payment and order.payment.reference %} {# Added check for order.payment to avoid error if payment is null #}
+            {% if order.payment and order.payment.reference %}
                 <p style="line-height: 1.6; margin: 10px 0; font-size: 16px;"><strong style="font-weight: bold;">Payment Reference:</strong> {{ order.payment.reference }}</p>
             {% endif %}
 
@@ -32,7 +32,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item in order.order_items.all %} {# Confirmed 'order_items.all' #}
+                        {% for item in order.order_items.all %}
                         <tr>
                             <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ item.product.name }}</td>
                             <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">{{ item.quantity }}</td>

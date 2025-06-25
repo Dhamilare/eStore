@@ -9,15 +9,9 @@ from phonenumber_field.formfields import PhoneNumberField
 
 from .models import BillingAddress, Rating
 
-# Always fetch the active user model (in case you switch to a custom one)
 User = get_user_model()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-#  Auth ‒ Login & Register
-# ─────────────────────────────────────────────────────────────────────────────
 class LoginForm(AuthenticationForm):
-    """Bootstrap-styled login form with optional ‘remember me’."""
     username = forms.CharField(
         label="Email or Username",
         widget=forms.TextInput(attrs={
@@ -39,12 +33,9 @@ class LoginForm(AuthenticationForm):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         label="Remember me",
     )
-    #  Django’s session middleware already respects the “Remember me” pattern
-    #  (set SESSION_COOKIE_AGE or override LoginView.form_valid).
 
 
 class RegisterForm(UserCreationForm):
-    """User sign-up with first/last name and email (unique checks included)."""
 
     first_name = forms.CharField(
         max_length=50, required=True,
@@ -71,7 +62,6 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name')
-        # widgets for username / passwords are set in __init__
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -92,7 +82,6 @@ class RegisterForm(UserCreationForm):
             'required': True,
         })
 
-    # ---- unique-field validation ------------------------------------------
     def clean_email(self):
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
@@ -105,7 +94,6 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError("A user with that username already exists.")
         return username
 
-    # ---- save only the User; Customer profile is created in the view -------
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
@@ -116,9 +104,6 @@ class RegisterForm(UserCreationForm):
         return user
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  Password-reset helpers
-# ─────────────────────────────────────────────────────────────────────────────
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
         label="Email address", max_length=254,
@@ -156,9 +141,6 @@ class CustomSetPasswordForm(SetPasswordForm):
     )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  Checkout
-# ─────────────────────────────────────────────────────────────────────────────
 class CheckoutForm(forms.ModelForm):
     phone = PhoneNumberField(
         region='NG',
@@ -210,9 +192,6 @@ class CheckoutForm(forms.ModelForm):
         }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  Product rating
-# ─────────────────────────────────────────────────────────────────────────────
 class ProductRatingForm(forms.ModelForm):
     value = forms.IntegerField(
         label="Rating (1-5 stars)",
@@ -234,4 +213,4 @@ class ProductRatingForm(forms.ModelForm):
     class Meta:
         model = Rating
         fields = ('value', 'comment')
-        # product & user are set in the view
+    

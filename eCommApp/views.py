@@ -48,17 +48,6 @@ def generateTransactionPin():
 def show_ajax_message(request, message, level='success'):
     getattr(messages, level, messages.info)(request, message)
 
-
-def send_order_status_update_email(order, new_status):
-    print(f"Simulating email to {order.user.email if order.user else '[anonymous]'} "
-          f"for Order #{order.id}. New status: {new_status}")
-
-
-def send_order_confirmation_email(order):
-    print(f"Simulating order confirmation email for Order #{order.id} "
-          f"to {order.user.email if order.user else '[anonymous]'}")
-
-
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
     authentication_form = LoginForm
@@ -81,8 +70,8 @@ class CustomLoginView(LoginView):
             messages.error(self.request, f"An unexpected error occurred: {e}. Please try again.")
         return super().form_invalid(form)
 
-    def get_success_url(self):
-        return reverse('home')
+    # def get_success_url(self):
+    #     return reverse('home')
 
 
 def register_view(request):
@@ -440,10 +429,8 @@ class CheckoutView(View):
                 email=form.cleaned_data['email'],
                 defaults={**form.cleaned_data}
             )
-            # Redirect to the payment page after successful billing info save
-            return redirect('payment')  # Ensure this matches your URL pattern name
+            return redirect('payment')
 
-        # If form is invalid, re-render the page with errors
         subtotal = cart.get_total_cost()
         shipping = settings.SHIPPING_COST if cart.items.exists() else 0
         tax = subtotal * settings.TAX_RATE
@@ -500,7 +487,6 @@ def place_order_api(request):
                 ordered_date=timezone.now()
             )
 
-            # create OrderItems & deduct stock
             for ci in cart.items.select_related('product'):
                 OrderItem.objects.create(
                     order=order,
@@ -712,6 +698,7 @@ def verifyPayment(request):
                         product.save()
                 order.ordered = True
                 order.save()
+                send_order_confirmation_email(order)
             request.session['last_order_id'] = order.id
             return redirect('success')
         else:

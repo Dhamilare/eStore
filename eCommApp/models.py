@@ -11,11 +11,6 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 
 
-def send_order_status_update_email(order, new_status):
-    print(f"Email sent to {order.user.email if order.user else 'Anonymous'} for Order #{order.id}. New status: {new_status}")
-
-
-# --- Product Catalog Models ---
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
@@ -265,7 +260,7 @@ class Cart(models.Model):
             raise ValidationError("A cart must be linked to a user or a session_key — both cannot be null.")
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # ensures the clean() check runs
+        self.full_clean() 
         super().save(*args, **kwargs)
 
 class CartItem(models.Model):

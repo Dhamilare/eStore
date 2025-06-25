@@ -19,14 +19,17 @@ def send_order_confirmation_email(order):
         return
 
     current_site = Site.objects.get_current()
+    domain = current_site.domain
+    site_url = f"http://{domain}"
 
     context = {
-        "order": order,
-        "customer": order.user,
-        "current_year": timezone.now().year,
-        "site_name": current_site.name,
-        "domain": current_site.domain,
-    }
+    "order": order,
+    "customer": order.user,
+    "current_year": timezone.now().year,
+    "site_name": current_site.name,
+    "domain": domain,
+    "site_url": site_url,
+}
 
     html_body = render_to_string("emails/order_confirmation.html", context)
     plain_text_body = strip_tags(html_body)
