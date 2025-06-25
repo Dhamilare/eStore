@@ -147,6 +147,30 @@
         .rounded-pill-alert {
             border-radius: 50px; /* More rounded */
         }
+        .bg-pending {
+            background-color: #ffc107 !important; /* Bootstrap Yellow/Warning */
+            color: #333 !important; /* Dark text for contrast */
+        }
+        .bg-processing {
+            background-color: #0d6efd !important; /* Bootstrap Blue/Primary */
+            color: #fff !important;
+        }
+        .bg-shipped {
+            background-color: #0dcaf0 !important; /* Bootstrap Cyan/Info */
+            color: #333 !important; /* Dark text for contrast */
+        }
+        .bg-delivered {
+            background-color: #198754 !important; /* Bootstrap Green/Success */
+            color: #fff !important;
+        }
+        .bg-cancelled {
+            background-color: #dc3545 !important; /* Bootstrap Red/Danger */
+            color: #fff !important;
+        }
+        .bg-default { /* Fallback for any unexpected status */
+            background-color: #6c757d !important; /* Bootstrap Grey/Secondary */
+            color: #fff !important;
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>

@@ -113,7 +113,6 @@ class DashboardView(StaffRequiredMixin, View):
         return render(request, self.template_name, context)
     
 
-
 class CategoryListView(StaffRequiredMixin, ListView):
     model = Category
     template_name = 'adminpanel/categories.html'

@@ -46,7 +46,7 @@
                 <h5 class="mb-0 text-primary"><i class="fas fa-user-circle me-2"></i>Customer & Billing Info</h5>
             </div>
             <div class="card-body">
-                <p><strong>Customer:</strong> {% if order.user %}<a href="{% url 'ecom_admin:customer_list' %}?q={{ order.user.username }}" class="text-decoration-none">{{ order.user.username }}</a>{% else %}Anonymous{% endif %}</p>
+                <p><strong>Customer:</strong> {% if order.user %}<a href="{% url 'customer_list' %}?q={{ order.user.username }}" class="text-decoration-none">{{ order.user.username }}</a>{% else %}Anonymous{% endif %}</p>
                 <p><strong>Name:</strong> {{ order.billing_address.first_name }} {{ order.billing_address.last_name }}</p>
                 <p><strong>Email:</strong> <a href="mailto:{{ order.billing_address.email }}" class="text-decoration-none">{{ order.billing_address.email }}</a></p>
                 <p><strong>Phone:</strong> {{ order.billing_address.phone }}</p>
@@ -83,7 +83,7 @@
                                             {% else %}
                                                 <img src="{% static 'adminpanel/img/default_product.png' %}" class="rounded me-2" width="50" height="50" alt="No Image">
                                             {% endif %}
-                                            <a href="{% url 'ecom_admin:product_detail' pk=item.product.pk %}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
+                                            <a href="{% url 'product_detail' pk=item.product.pk %}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4 text-end">₦{{ item.price|floatformat:2|intcomma }}</td>
@@ -149,7 +149,7 @@
             const newStatus = this.value;
             if (newStatus) {
                 if (confirm(`Are you sure you want to change order status to "${this.options[this.selectedIndex].text}"?`)) {
-                    fetch('{% url "ecom_admin:order_detail" pk=order.id %}', {
+                    fetch('{% url "order_detail" pk=order.id %}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',

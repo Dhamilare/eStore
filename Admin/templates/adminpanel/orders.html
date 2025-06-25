@@ -54,7 +54,7 @@
                                 <td class="py-3 px-4">#{{ order.id }}</td>
                                 <td class="py-3 px-4">
                                     {% if order.user %}
-                                        <a href="{% url 'ecom_admin:customer_list' %}?q={{ order.user.username }}" class="text-decoration-none text-dark">{{ order.user.username }}</a>
+                                        <a href="{% url 'customer_list' %}?q={{ order.user.username }}" class="text-decoration-none text-dark">{{ order.user.username }}</a>
                                     {% else %}
                                         Anonymous
                                     {% endif %}
@@ -67,7 +67,7 @@
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-center">
-                                    <a href="{% url order_detail' pk=order.id %}" class="btn btn-sm btn-outline-primary rounded-pill" title="View Details">
+                                    <a href="{% url 'order_detail' pk=order.id %}" class="btn btn-sm btn-outline-primary rounded-pill" title="View Details">
                                         <i class="fas fa-eye"></i> View
                                     </a>
                                 </td>

@@ -42,7 +42,7 @@
 
 <div class="card shadow-lg rounded-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">All Products ({{ products.paginator.count }})</h5>
+        <h5 class="mb-0">All Products ({{ products.count }})</h5>
         <a href="{% url 'product_add' %}" class="btn btn-success btn-sm rounded-pill px-3">
             <i class="fas fa-plus-circle me-2"></i>Add Product
         </a>
