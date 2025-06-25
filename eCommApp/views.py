@@ -653,5 +653,8 @@ def verifyPayment(request):
     else:
         print(f"[Paystack] Failed response: {data}")
         return redirect('checkout')
+    
+def faq_view(request):
+    return render(request, 'faq.html', {})
 
 

@@ -10,6 +10,7 @@ urlpatterns = [
     path('products/', views.ProductListView.as_view(), name='products_list'),
     path('product_details/<slug:slug>/', views.ProductDetailView.as_view(), name='product_detail'),
     path('services/', views.services_view, name='services'),
+    path('faq/', views.faq_view, name='faq'),
 
     # === Cart & Checkout ===
     path('cart/', views.cart_view, name='cart'),

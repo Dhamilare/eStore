@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EcomStore - FAQ{% endblock %}
+
+{% block content %}
+    <section class="page-header text-white rounded-4 shadow-lg mb-5">
+        <div class="container text-center">
+            <h1>Frequently Asked Questions</h1>
+            <p class="lead">Find answers to the most common questions about our products and services.</p>
+        </div>
+    </section>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg rounded-4 p-4">
+                    <div class="card-body">
+                        <h3 class="card-title text-center text-primary mb-5">Common Queries</h3>
+
+                        <div class="accordion accordion-flush" id="faqAccordion">
+                            <div class="accordion-item rounded-3 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed fs-5 fw-bold text-dark rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        What are your delivery options and timelines?
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We offer standard and express delivery options. Standard delivery typically takes 3-5 business days, while express delivery arrives within 1-2 business days. Delivery times may vary based on your location and product availability. You can track your order status in your account.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item rounded-3 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed fs-5 fw-bold text-dark rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        What is your return and refund policy?
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We accept returns of unused and undamaged items within 30 days of purchase for a full refund or exchange. Custom or personalized items are generally non-returnable. Please visit our <a href="#" class="text-primary text-decoration-none">Contact Us</a> page to initiate a return.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item rounded-3 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed fs-5 fw-bold text-dark rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        How can I track my order?
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Once your order is shipped, you will receive an email with a DHL tracking number. You can use this number on our <a href="{% url 'order_history' %}" class="text-primary text-decoration-none">Order History</a> page or directly on the DHL website to monitor your shipment's progress.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item rounded-3 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="headingFour">
+                                    <button class="accordion-button collapsed fs-5 fw-bold text-dark rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                        Do you offer international shipping?
+                                    </button>
+                                </h2>
+                                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Yes, we do! We ship to a wide range of international destinations. Shipping costs and delivery times for international orders vary depending on the destination country and the size/weight of your order. You can see the exact shipping cost at checkout.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item rounded-3 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="headingFive">
+                                    <button class="accordion-button collapsed fs-5 fw-bold text-dark rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                        What payment methods do you accept?
+                                    </button>
+                                </h2>
+                                <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We securely accept various payment methods through Paystack, including major credit/debit cards (Visa, Mastercard, Verve) and bank transfers. All transactions are processed securely.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item rounded-3 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="headingSix">
+                                    <button class="accordion-button collapsed fs-5 fw-bold text-dark rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                        How can I contact customer support?
+                                    </button>
+                                </h2>
+                                <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        You can reach our customer support team via our <a href="#" class="text-primary text-decoration-none">Contact Us</a> page, by emailing us at support@ecomstore.com, or by calling us during business hours at +123 456 7890. We aim to respond to all inquiries within 24 hours.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <p class="lead text-muted">Still have questions? We're here to help!</p>
+            <a href="#" class="btn btn-outline-primary btn-lg rounded-pill px-5">Contact Support <i class="fas fa-headset ms-2"></i></a>
+        </div>
+    </div>
+{% endblock %}
