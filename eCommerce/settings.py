@@ -141,6 +141,7 @@ PAYSTACK_PUBLIC_KEY = config("PAYSTACK_PUBLIC_KEY")
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY")
 
 LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/'
 
 from decimal import Decimal
 TAX_RATE = Decimal(config('TAX_RATE', default='0.075'))

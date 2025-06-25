@@ -18,8 +18,7 @@ from django.core.files.storage import default_storage
 from django.contrib.auth.views import LoginView as DjangoLoginView
 
 class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-
-    login_url = '/storeAdmin/login/'
+    login_url = reverse_lazy('admin_login')
 
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
