@@ -3,8 +3,6 @@ from django.contrib.auth import views as auth_views
 from . import views 
 from .forms import * 
 
-appname = 'eStore'
-
 urlpatterns = [
     # === Home & Content Pages ===
     path('', views.HomeView.as_view(), name='home'),

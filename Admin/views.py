@@ -24,9 +24,9 @@ class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
 
-    def handle_no_permission(self):
-        messages.error(self.request, "You do not have access to this area.")
-        return redirect('eStore:home')
+    # def handle_no_permission(self):
+    #     messages.error(self.request, "You do not have access to this area.")
+    #     return redirect('eStore:home')
 
 class AdminLoginView(DjangoLoginView):
     template_name = 'adminpanel/login.html'
@@ -88,6 +88,14 @@ class DashboardView(StaffRequiredMixin, View):
         top_product_names = [p.name for p in top_products]
         top_product_quantities = [float(p.total_sold) for p in top_products]
 
+        chart_data = {
+            'monthly_sales_labels': months,
+            'monthly_sales_data': sales,
+            'order_status_labels': status_labels,
+            'order_status_counts': status_counts,
+            'top_product_names': top_product_names,
+            'top_product_quantities': top_product_quantities,
+        }
 
         context = {
             'page_title': 'Ecom Admin Dashboard',
@@ -101,17 +109,9 @@ class DashboardView(StaffRequiredMixin, View):
                 'total_customers': total_customers,
                 'products_in_stock': products_in_stock,
             },
-            'chart_data': {
-                'monthly_sales_labels': months,
-                'monthly_sales_data': sales,
-                'order_status_labels': status_labels,
-                'order_status_counts': status_counts,
-                'top_product_names': top_product_names,
-                'top_product_quantities': top_product_quantities,
-            }
+            'chart_data': chart_data
         }
         return render(request, self.template_name, context)
-    
 
 class CategoryListView(StaffRequiredMixin, ListView):
     model = Category

@@ -3,27 +3,27 @@
 {% load humanize %}
 
 {% block extra_head %}
-    <style>
-        .kpi-row .col {
-            margin-bottom: 20px; /* Spacing between KPI cards */
-        }
-        .chart-container {
-            height: 350px; /* Fixed height for charts to maintain consistency */
-            width: 100%;
-            display: flex; /* Use flexbox to center canvas */
-            justify-content: center;
-            align-items: center;
-        }
-        .chart-card canvas {
-            max-height: 100%; /* Ensure canvas fits its container */
-            max-width: 100%;
-        }
-        .kpi-card .fas {
-            font-size: 1.8rem; /* Larger icon size */
-            margin-bottom: 8px; /* Space between icon and text */
-            opacity: 0.9;
-        }
-    </style>
+<style>
+    .kpi-row .col {
+        margin-bottom: 20px;
+    }
+    .chart-container {
+        height: 350px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .chart-card canvas {
+        max-height: 100%;
+        max-width: 100%;
+    }
+    .kpi-card .fas {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+        opacity: 0.9;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -45,42 +45,42 @@
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card kpi-card" style="background: linear-gradient(135deg, #1abc9c, #16a085);"> {# Custom color gradient #}
+        <div class="card kpi-card" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
             <i class="fas fa-users"></i>
             <h5>Total Customers</h5>
             <p>{{ kpis.total_customers|intcomma }}</p>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card kpi-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);"> {# Custom color gradient #}
+        <div class="card kpi-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
             <i class="fas fa-cubes"></i>
             <h5>Products in Stock</h5>
             <p>{{ kpis.products_in_stock|intcomma }}</p>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card kpi-card" style="background: linear-gradient(135deg, #3498db, #2980b9);"> {# Custom color gradient #}
+        <div class="card kpi-card" style="background: linear-gradient(135deg, #3498db, #2980b9);">
             <i class="fas fa-calendar-day"></i>
             <h5>Orders Today</h5>
             <p>{{ kpis.orders_today|intcomma }}</p>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card kpi-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);"> {# Custom color gradient #}
+        <div class="card kpi-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
             <i class="fas fa-money-bill-wave"></i>
             <h5>Revenue Today</h5>
             <p>₦{{ kpis.revenue_today|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card kpi-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);"> {# Custom color gradient #}
+        <div class="card kpi-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
             <i class="fas fa-calendar-alt"></i>
             <h5>Orders This Month</h5>
             <p>{{ kpis.orders_this_month|intcomma }}</p>
         </div>
     </div>
     <div class="col-xl-3 col-md-6">
-        <div class="card kpi-card" style="background: linear-gradient(135deg, #27ae60, #2ecc71);"> {# Custom color gradient #}
+        <div class="card kpi-card" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
             <i class="fas fa-hand-holding-usd"></i>
             <h5>Revenue This Month</h5>
             <p>₦{{ kpis.revenue_this_month|floatformat:2|intcomma }}</p>
@@ -114,203 +114,99 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<!-- Inject chart data safely -->
+{{ chart_data|json_script:"chart-data" }}
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Retrieve chart data passed from the Django view
-        // Using json_script filter to safely pass JSON data
+    document.addEventListener('DOMContentLoaded', function () {
         const chartDataElement = document.getElementById('chart-data');
-        if (!chartDataElement) {
-            console.error("Chart data element not found. Make sure 'chart_data' is passed to the template context and rendered with |json_script.");
+        let chartData = {};
+        try {
+            chartData = JSON.parse(chartDataElement.textContent);
+        } catch (e) {
+            console.error("Error parsing chart data JSON:", e);
             return;
         }
-        // CORRECTED: Parse the text content of the script tag, not the tag itself.
-        const chartData = JSON.parse(chartDataElement.textContent);
 
-        // Chart.js Configuration
-        // Monthly Sales Trend Chart
-        const ctxSales = document.getElementById('monthlySalesChart').getContext('2d');
-        new Chart(ctxSales, {
-            type: 'line',
-            data: {
-                labels: chartData.monthly_sales_labels,
-                datasets: [{
-                    label: 'Total Sales (₦)',
-                    data: chartData.monthly_sales_data,
-                    borderColor: '#6C63FF', /* Primary color from custom CSS */
-                    backgroundColor: 'rgba(108, 99, 255, 0.2)', /* Lighter fill for area under line */
-                    tension: 0.3, /* Smooth line effect */
-                    fill: true, /* Fill area under the line */
-                    pointBackgroundColor: '#6C63FF',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, /* Allow manual control of aspect ratio */
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Revenue (₦)', color: '#555' },
-                        grid: { color: 'rgba(0,0,0,0.08)', drawBorder: false }, /* Light grid lines */
-                        ticks: {
-                            callback: function(value) {
-                                return '₦' + value.toLocaleString(); /* Format Y-axis labels as currency */
-                            },
-                            color: '#555'
-                        }
-                    },
-                    x: {
-                        grid: { display: false }, /* No vertical grid lines */
-                        ticks: { color: '#555' }
-                    }
+        // Line Chart: Monthly Sales
+        const ctxSales = document.getElementById('monthlySalesChart');
+        if (ctxSales) {
+            new Chart(ctxSales.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartData.monthly_sales_labels,
+                    datasets: [{
+                        label: 'Total Sales (₦)',
+                        data: chartData.monthly_sales_data,
+                        borderColor: '#6C63FF',
+                        backgroundColor: 'rgba(108, 99, 255, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
                 },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            color: '#333'
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '₦' + value.toLocaleString();
                                 }
-                                if (context.parsed.y !== null) {
-                                    label += '₦' + context.parsed.y.toLocaleString();
-                                }
-                                return label;
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        // Order Status Distribution Chart (Doughnut Chart)
-        const ctxStatus = document.getElementById('orderStatusChart').getContext('2d');
-        new Chart(ctxStatus, {
-            type: 'doughnut',
-            data: {
-                labels: chartData.order_status_labels,
-                datasets: [{
-                    data: chartData.order_status_counts,
-                    backgroundColor: [
-                        '#f39c12', /* Pending - Orange */
-                        '#3498db', /* Processing - Blue */
-                        '#2ecc71', /* Shipped - Green */
-                        '#9b59b6', /* Delivered - Purple */
-                        '#e74c3c'  /* Cancelled - Red */
-                    ],
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right', /* Legend on the right side */
-                        labels: {
-                            color: '#333'
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        callbacks: {
-                            label: (context) => {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed !== null) {
-                                    label += context.parsed + ' orders';
-                                }
-                                return label;
-                            }
-                        }
-                    }
+        // Doughnut Chart: Order Status
+        const ctxStatus = document.getElementById('orderStatusChart');
+        if (ctxStatus) {
+            new Chart(ctxStatus.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.order_status_labels,
+                    datasets: [{
+                        data: chartData.order_status_counts,
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71', '#9b59b6', '#e74c3c']
+                    }]
                 },
-                cutout: '70%', /* Thicker doughnut */
-            }
-        });
-
-        // Top 5 Best-Selling Products Chart (Horizontal Bar Chart)
-        const ctxTopProducts = document.getElementById('topProductsChart').getContext('2d');
-        new Chart(ctxTopProducts, {
-            type: 'bar',
-            data: {
-                labels: chartData.top_product_names,
-                datasets: [{
-                    label: 'Quantity Sold',
-                    data: chartData.top_product_quantities,
-                    backgroundColor: '#6C63FF', /* Primary color */
-                    borderColor: '#8D86FF', /* Accent color for border */
-                    borderWidth: 1,
-                    borderRadius: 5 /* Rounded bars */
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y', /* Horizontal bars */
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Quantity Sold', color: '#555' },
-                        grid: { color: 'rgba(0,0,0,0.08)', drawBorder: false },
-                        ticks: { color: '#555' }
-                    },
-                    y: {
-                        grid: { display: false },
-                        ticks: { color: '#555' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }, /* No legend needed for single bar dataset */
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.x !== null) {
-                                    label += context.parsed.x.toLocaleString();
-                                }
-                                return label;
-                            }
-                        }
-                    }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
                 }
-            }
-        });
+            });
+        }
+
+        // Bar Chart: Top Products
+        const ctxTopProducts = document.getElementById('topProductsChart');
+        if (ctxTopProducts) {
+            new Chart(ctxTopProducts.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.top_product_names,
+                    datasets: [{
+                        label: 'Quantity Sold',
+                        data: chartData.top_product_quantities,
+                        backgroundColor: '#6C63FF',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
     });
-</script>
-<script id="chart-data" type="application/json">
-    {{ chart_data|json_script:"chart_data" }}
 </script>
 {% endblock %}

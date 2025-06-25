@@ -146,5 +146,3 @@ from decimal import Decimal
 TAX_RATE = Decimal(config('TAX_RATE', default='0.075'))
 SHIPPING_COST = Decimal(config('SHIPPING_COST', default='2500'))
 
-
-
