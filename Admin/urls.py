@@ -1,10 +1,12 @@
 from django.urls import path
 from .views import *
+from django.contrib.auth.views import LogoutView
     
 
 urlpatterns = [
-    # Login
+    # Login/Logout
     path('', AdminLoginView.as_view(), name='admin_login'),
+    path('logout/', LogoutView.as_view(next_page=reverse_lazy('admin_login')), name='admin_logout'),
     
     # Dashboard
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
