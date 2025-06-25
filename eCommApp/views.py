@@ -448,65 +448,6 @@ class CheckoutView(View):
             'paystack_public_key': config('PAYSTACK_PUBLIC_KEY')
         })
 
-@require_POST
-@login_required
-def place_order_api(request):
-    try:
-        data = json.loads(request.body)
-        payment_reference = data.get('payment_reference')
-        payment_gateway = data.get('payment_method_type', 'PAYSTACK')
-        card_brand = data.get('card_brand')
-        card_last_four = data.get('card_last_four')
-
-        cart = get_object_or_404(Cart, user=request.user)
-        if not cart.items.exists():
-            return JsonResponse({'success': False, 'message': 'Cart empty.'}, status=400)
-
-        billing_address = BillingAddress.objects.filter(
-            user=request.user, is_default=True
-        ).first() or BillingAddress.objects.filter(user=request.user).first()
-        if not billing_address:
-            return JsonResponse({'success': False, 'message': 'No billing address.'}, status=400)
-
-        with transaction.atomic():
-            payment = Payment.objects.create(
-                user=request.user,
-                amount=cart.get_total_cost(),
-                reference=payment_reference,
-                payment_gateway=payment_gateway,
-                card_brand=card_brand,
-                card_last_four=card_last_four,
-            )
-
-            order = Order.objects.create(
-                user=request.user,
-                billing_address=billing_address,
-                payment=payment,
-                ordered=True,
-                status=Order.PROCESSING,
-                ordered_date=timezone.now()
-            )
-
-            for ci in cart.items.select_related('product'):
-                OrderItem.objects.create(
-                    order=order,
-                    product=ci.product,
-                    price=ci.price_at_addition,
-                    quantity=ci.quantity
-                )
-                ci.product.stock -= ci.quantity
-                ci.product.save()
-
-            cart.clear()
-            request.session['last_order_id'] = order.id
-            send_order_confirmation_email(order)
-
-        return JsonResponse({'success': True, 'orderId': order.id})
-
-    except (json.JSONDecodeError, ValueError):
-        return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 def services_view(request):

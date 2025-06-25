@@ -166,6 +166,12 @@ class Payment(models.Model):
 
 
 class Order(models.Model):
+    PENDING = 'PENDING'
+    PROCESSING = 'PROCESSING'
+    SHIPPED = 'SHIPPED'
+    DELIVERED = 'DELIVERED'
+    CANCELLED = 'CANCELLED'
+    
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('PROCESSING', 'Processing'),

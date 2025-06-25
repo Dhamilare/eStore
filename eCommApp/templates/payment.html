@@ -58,18 +58,13 @@
                         <strong>₦{{ grand_total|floatformat:2 }}</strong>
                     </div>
 
-                    <!-- Payment Method -->
-                    <h5 class="mt-4">💳 Choose Payment Method</h5>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="payment_method" id="paystack_option" value="paystack" checked>
-                        <label class="form-check-label" for="paystack_option">Pay with Paystack</label>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="payment_method" id="card_option" value="card">
-                        <label class="form-check-label" for="card_option">Pay with Card</label>
+                    <!-- Payment with Paystack -->
+                    <h5 class="mt-4">💳 Payment Method</h5>
+                    <div class="alert alert-info mb-3">
+                        You’ll be redirected to Paystack to complete your secure payment.
                     </div>
 
-                    <button class="btn btn-primary w-100 mt-3" onclick="submitPayment()">Proceed to Pay</button>
+                    <button class="btn btn-success w-100 mt-2" onclick="payWithPaystack()">Pay with Paystack</button>
                 </div>
             </div>
         </div>
@@ -79,34 +74,29 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Paystack JS -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
-
 <script>
-function submitPayment() {
-    const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+function payWithPaystack() {
     const email = "{{ bill_address.email|escapejs }}";
-    const amount = Math.round(parseFloat("{{ grand_total|floatformat:'2' }}") * 100);  // In kobo
+    const amount = Math.round(parseFloat("{{ grand_total|floatformat:'2' }}") * 100);  // in kobo
     const ref = "{{ unique_ref|escapejs }}";
 
-    if (paymentMethod === "paystack") {
-        let handler = PaystackPop.setup({
-            key: "{{ paystack_public_key|escapejs }}",
-            email: email,
-            amount: amount,
-            currency: "NGN",
-            ref: ref,
-            callback: function(response) {
-                window.location.href = "{% url 'verifyPayment' %}?reference=" + response.reference;
-            },
-            onClose: function() {
-                alert("Payment cancelled.");
-            }
-        });
-        handler.openIframe();
-    } else {
-        alert("💳 Card gateway coming soon. Using Paystack for now.");
-    }
+    let handler = PaystackPop.setup({
+        key: "{{ paystack_public_key|escapejs }}",
+        email: email,
+        amount: amount,
+        currency: "NGN",
+        ref: ref,
+        callback: function(response) {
+            // Redirect to backend to verify
+            window.location.href = "{% url 'verifyPayment' %}?reference=" + response.reference;
+        },
+        onClose: function() {
+            alert("Payment cancelled.");
+        }
+    });
+
+    handler.openIframe();
 }
 </script>
 {% endblock %}
