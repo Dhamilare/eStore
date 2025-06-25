@@ -428,3 +428,53 @@ class CustomerListView(StaffRequiredMixin, ListView):
         context['current_query'] = self.request.GET.get('q', '')
         return context
 
+class RatingDeleteAjaxView(StaffRequiredMixin, View):
+    def post(self, request):
+        if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
+
+        rating_id = request.POST.get('rating_id')
+        try:
+            rating = get_object_or_404(Rating, pk=rating_id)
+            with transaction.atomic():
+                product_name = rating.product.name
+                rating.delete()
+                messages.success(request, f"Rating for '{product_name}' by '{rating.user.username}' deleted successfully.")
+                return JsonResponse({'success': True, 'message': f'Rating deleted successfully.'})
+        except Rating.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Rating not found.'}, status=404)
+        except Exception as e:
+            messages.error(request, f"Error deleting rating: {e}")
+            return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+        
+
+class ProductRatingListView(StaffRequiredMixin, ListView):
+    
+    model = Rating
+    template_name = 'adminpanel/product_ratings.html'
+    context_object_name = 'ratings'
+    paginate_by = 10
+
+    def get_queryset(self):
+        product_pk = self.kwargs['pk'] 
+        product = get_object_or_404(Product, pk=product_pk)
+        queryset = super().get_queryset().filter(product=product).select_related('user') # Optimize
+        
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(comment__icontains=query) |
+                Q(user__username__icontains=query)
+            )
+
+        return queryset.order_by('-created_at') # Order by newest first
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product_pk = self.kwargs['pk']
+        product = get_object_or_404(Product, pk=product_pk)
+        
+        context['page_title'] = f'Ratings for {product.name}'
+        context['product'] = product
+        context['current_query'] = self.request.GET.get('q', '')
+        return context

@@ -33,7 +33,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-lg-7">
         <div class="card shadow-lg rounded-4 h-100">
             <div class="card-header">
@@ -92,7 +91,8 @@
                         <span class="text-warning"><i class="fas fa-star"></i> {{ product.average_rating }} / 5</span> 
                         ({{ product.total_ratings }} review{% if product.total_ratings != 1 %}s{% endif %})
                     </p>
-                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">View All Reviews <i class="fas fa-arrow-right ms-2"></i></a>
+                    {# UPDATED LINK HERE #}
+                    <a href="{% url 'product_ratings' pk=product.id %}" class="btn btn-sm btn-outline-primary rounded-pill">View All Reviews <i class="fas fa-arrow-right ms-2"></i></a>
                 {% else %}
                     <p class="text-muted">No ratings yet for this product.</p>
                 {% endif %}

@@ -25,6 +25,8 @@ urlpatterns = [
     path('products/edit/<int:pk>/', ProductFormView.as_view(), name='product_edit'),
     path('products/detail/<int:pk>/', ProductDetailAdminView.as_view(), name='product_detail'), 
     path('products/delete/', ProductDeleteAjaxView.as_view(), name='product_delete'),
+    path('products/<int:pk>/ratings/', ProductRatingListView.as_view(), name='product_ratings'),
+    path('ratings/delete/', RatingDeleteAjaxView.as_view(), name='rating_delete'),
 
     # Customer Management
     path('customers/', CustomerListView.as_view(), name='customer_list'), 
