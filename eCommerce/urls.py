@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('eCommApp.urls'), name='index'),
+    path('storeAdmin/', include('Admin.urls')),
 ]
 
 if settings.DEBUG:

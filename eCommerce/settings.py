@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'widget_tweaks',
     'phonenumber_field',
+    'django.contrib.humanize',
     'eCommApp',
+    'Admin',
 ]
 
 SITE_ID = 1 

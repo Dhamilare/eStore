@@ -1,0 +1,231 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-center text-dark fw-bold">{{ page_title }}</h2>
+
+{# Search and Filter Section #}
+<div class="card shadow-lg rounded-4 mb-4">
+    <div class="card-body">
+        <form action="{% url 'product_list' %}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="searchQuery" class="form-label visually-hidden">Search Products</label>
+                <input type="text" class="form-control rounded-pill shadow-sm" id="searchQuery" name="q" placeholder="Search by name or description..." value="{{ current_query }}">
+            </div>
+            <div class="col-md-3">
+                <label for="categoryFilter" class="form-label visually-hidden">Filter by Category</label>
+                <select class="form-select rounded-pill shadow-sm" id="categoryFilter" name="category">
+                    <option value="ALL" {% if current_category == 'ALL' %}selected{% endif %}>All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" {% if current_category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="availabilityFilter" class="form-label visually-hidden">Filter by Availability</label>
+                <select class="form-select rounded-pill shadow-sm" id="availabilityFilter" name="availability">
+                    {% for value, display_name in availability_choices %}
+                        <option value="{{ value }}" {% if current_availability == value %}selected{% endif %}>{{ display_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 me-2"><i class="fas fa-filter me-2"></i>Filter</button>
+                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary rounded-pill px-4"><i class="fas fa-sync-alt"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-lg rounded-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">All Products ({{ products.paginator.count }})</h5>
+        <a href="{% url 'product_add' %}" class="btn btn-success btn-sm rounded-pill px-3">
+            <i class="fas fa-plus-circle me-2"></i>Add Product
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if products %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="py-3 px-4">Image</th>
+                            <th scope="col" class="py-3 px-4">Name</th>
+                            <th scope="col" class="py-3 px-4">Category</th>
+                            <th scope="col" class="py-3 px-4 text-end">Price (₦)</th>
+                            <th scope="col" class="py-3 px-4 text-end">Discount (₦)</th>
+                            <th scope="col" class="py-3 px-4 text-center">Stock</th>
+                            <th scope="col" class="py-3 px-4 text-center">Available</th>
+                            <th scope="col" class="py-3 px-4 text-center">Rating</th>
+                            <th scope="col" class="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr id="product-row-{{ product.id }}">
+                                <td class="py-3 px-4">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" class="rounded" width="50" height="50" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="{% static 'adminpanel/img/default_product.png' %}" class="rounded" width="50" height="50" alt="No Image">
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <a href="{% url 'product_detail' pk=product.id %}" class="text-decoration-none text-dark fw-bold">
+                                        {{ product.name }}
+                                    </a>
+                                </td>
+                                <td class="py-3 px-4">{{ product.category.name|default:"N/A" }}</td>
+                                <td class="py-3 px-4 text-end">₦{{ product.price|floatformat:2|intcomma }}</td>
+                                <td class="py-3 px-4 text-end">
+                                    {% if product.discount_price %}
+                                        ₦{{ product.discount_price|floatformat:2|intcomma }} ({{ product.get_discount_percentage }}% off)
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <span class="badge bg-{% if product.stock > 10 %}success{% elif product.stock > 0 %}warning{% else %}danger{% endif %}">
+                                        {{ product.stock }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    {% if product.available %}
+                                        <i class="fas fa-check-circle text-success" title="Available"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger" title="Not Available"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    {% if product.average_rating > 0 %}
+                                        <i class="fas fa-star text-warning"></i> {{ product.average_rating }} ({{ product.total_ratings }} reviews)
+                                    {% else %}
+                                        No Ratings
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <a href="{% url 'product_edit' pk=product.id %}" class="btn btn-sm btn-outline-info rounded-pill me-2" title="Edit Product">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill delete-product-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" title="Delete Product">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4 text-center text-muted">
+                <i class="fas fa-box-open fa-2x mb-3"></i>
+                <p>No products found matching your criteria. Click "Add Product" to get started!</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if is_paginated %}
+    <div class="card-footer bg-white border-top py-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-pill mx-1" href="?page={{ page_obj.previous_page_number }}{% if current_query %}&q={{ current_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_availability %}&availability={{ current_availability }}{% endif %}">Previous</a></li>
+                {% endif %}
+                {% for i in paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link rounded-pill mx-1" href="?page={{ i }}{% if current_query %}&q={{ current_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_availability %}&availability={{ current_availability }}{% endif %}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link rounded-pill mx-1" href="?page={{ page_obj.next_page_number }}{% if current_query %}&q={{ current_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_availability %}&availability={{ current_availability }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+{# Confirmation Modal for Delete #}
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg">
+            <div class="modal-header bg-danger text-white rounded-top-4">
+                <h5 class="modal-title" id="deleteConfirmModalLabel"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                Are you sure you want to delete product "<strong id="modalProductName"></strong>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer justify-content-between p-3">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        let productToDeleteId = null;
+        let productToDeleteName = '';
+
+        document.querySelectorAll('.delete-product-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                productToDeleteId = this.dataset.productId;
+                productToDeleteName = this.dataset.productName;
+                document.getElementById('modalProductName').textContent = productToDeleteName;
+                deleteConfirmModal.show();
+            });
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (productToDeleteId) {
+                fetch('{% url "product_delete" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `product_id=${productToDeleteId}`
+                })
+                .then(response => response.json().then(data => ({ status: response.status, ok: response.ok, data: data })))
+                .then(({ status, ok, data }) => {
+                    deleteConfirmModal.hide(); // Hide modal immediately
+                    if (ok) {
+                        showAjaxMessage(data.message || 'Product deleted successfully!', 'success');
+                        // Remove the row from the table without reloading
+                        const row = document.getElementById(`product-row-${productToDeleteId}`);
+                        if (row) {
+                            row.remove();
+                        }
+                        // If no products left, reload to show empty message (or update count)
+                        if (document.querySelectorAll('tbody tr').length === 0) {
+                            location.reload(); 
+                        }
+                    } else {
+                        showAjaxMessage(data.message || 'Error deleting product.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    deleteConfirmModal.hide();
+                    console.error('Fetch error:', error);
+                    showAjaxMessage('Network error or unexpected issue. Could not delete product.', 'danger');
+                })
+                .finally(() => {
+                    productToDeleteId = null; // Reset for next operation
+                    productToDeleteName = '';
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-center text-dark fw-bold">{{ page_title }}</h2>
+
+<div class="card shadow-lg rounded-4 mb-4">
+    <div class="card-body">
+        <form action="{% url 'customer_list' %}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label for="searchQuery" class="form-label visually-hidden">Search Customers</label>
+                <input type="text" class="form-control rounded-pill shadow-sm" id="searchQuery" name="q" placeholder="Search by username, name, or email..." value="{{ current_query }}">
+            </div>
+            <div class="col-md-3 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 me-2"><i class="fas fa-search me-2"></i>Search</button>
+                <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary rounded-pill px-4"><i class="fas fa-sync-alt"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Customers Table #}
+<div class="card shadow-lg rounded-4">
+    <div class="card-header">
+        <h5 class="mb-0">All Customers ({{ customers.paginator.count }})</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="py-3 px-4">ID</th>
+                            <th scope="col" class="py-3 px-4">Username</th>
+                            <th scope="col" class="py-3 px-4">Full Name</th>
+                            <th scope="col" class="py-3 px-4">Email</th>
+                            <th scope="col" class="py-3 px-4">Date Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                            <tr>
+                                <td class="py-3 px-4">{{ customer.id }}</td>
+                                <td class="py-3 px-4">{{ customer.user.username }}</td>
+                                <td class="py-3 px-4">{{ customer.get_full_name }}</td>
+                                <td class="py-3 px-4">{{ customer.email }}</td>
+                                <td class="py-3 px-4">{{ customer.date_joined|date:"M d, Y H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4 text-center text-muted">
+                <i class="fas fa-users fa-2x mb-3"></i>
+                <p>No customers found matching your criteria.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if is_paginated %}
+    <div class="card-footer bg-white border-top py-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link rounded-pill mx-1" href="?page={{ page_obj.previous_page_number }}{% if current_query %}&q={{ current_query }}{% endif %}">Previous</a></li>
+                {% endif %}
+                {% for i in paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link rounded-pill mx-1" href="?page={{ i }}{% if current_query %}&q={{ current_query }}{% endif %}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link rounded-pill mx-1" href="?page={{ page_obj.next_page_number }}{% if current_query %}&q={{ current_query }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

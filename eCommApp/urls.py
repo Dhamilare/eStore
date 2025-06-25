@@ -1,8 +1,9 @@
 from django.urls import path, reverse_lazy
-from django.contrib.auth import views as auth_views # Keep for password reset views
+from django.contrib.auth import views as auth_views
+from . import views 
+from .forms import * 
 
-from . import views # Your custom views (including CustomLoginView, register_view, activate)
-from .forms import * # Your forms (LoginForm, CustomPasswordResetForm, CustomSetPasswordForm)
+appname = 'eStore'
 
 urlpatterns = [
     # === Home & Content Pages ===

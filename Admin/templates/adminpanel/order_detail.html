@@ -1,0 +1,201 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-center text-dark fw-bold">{{ page_title }}</h2>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-lg rounded-4 h-100">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-info-circle me-2"></i>Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Order ID:</strong> #{{ order.id }}</p>
+                <p><strong>Order Date:</strong> {{ order.ordered_date|date:"F d, Y H:i" }}</p>
+                <p><strong>Status:</strong>
+                    <span class="badge rounded-pill bg-{{ order.get_status_display|lower }}">
+                        {{ order.get_status_display }}
+                    </span>
+                </p>
+                <p><strong>Total Items:</strong> {{ order.order_items.count }}</p>
+                <p class="h5 text-success"><strong>Grand Total:</strong> ₦{{ order.get_grand_total|floatformat:2|intcomma }}</p>
+            </div>
+            <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center">
+                {# Status Update Dropdown #}
+                <div class="flex-grow-1 me-3">
+                    <select class="form-select rounded-pill shadow-sm" id="orderStatusSelect" data-order-id="{{ order.id }}">
+                        <option value="">Update Status</option>
+                        {% for status_code, status_display in status_choices %}
+                            <option value="{{ status_code }}" {% if order.status == status_code %}selected{% endif %}>
+                                {{ status_display }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-lg rounded-4 h-100">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-user-circle me-2"></i>Customer & Billing Info</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Customer:</strong> {% if order.user %}<a href="{% url 'ecom_admin:customer_list' %}?q={{ order.user.username }}" class="text-decoration-none">{{ order.user.username }}</a>{% else %}Anonymous{% endif %}</p>
+                <p><strong>Name:</strong> {{ order.billing_address.first_name }} {{ order.billing_address.last_name }}</p>
+                <p><strong>Email:</strong> <a href="mailto:{{ order.billing_address.email }}" class="text-decoration-none">{{ order.billing_address.email }}</a></p>
+                <p><strong>Phone:</strong> {{ order.billing_address.phone }}</p>
+                <p><strong>Address:</strong> {{ order.billing_address.address }}, {{ order.billing_address.city }}, {{ order.billing_address.zipcode }}, {{ order.billing_address.country.name }}</p>
+                {% if order.billing_address.order_note %}
+                    <p><strong>Order Note:</strong> {{ order.billing_address.order_note }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card shadow-lg rounded-4">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-list-alt me-2"></i>Ordered Items</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="py-3 px-4">Product</th>
+                                <th scope="col" class="py-3 px-4 text-end">Price</th>
+                                <th scope="col" class="py-3 px-4 text-center">Quantity</th>
+                                <th scope="col" class="py-3 px-4 text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                                <tr>
+                                    <td class="py-3 px-4">
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" class="rounded me-2" width="50" height="50" alt="{{ item.product.name }}">
+                                            {% else %}
+                                                <img src="{% static 'adminpanel/img/default_product.png' %}" class="rounded me-2" width="50" height="50" alt="No Image">
+                                            {% endif %}
+                                            <a href="{% url 'ecom_admin:product_detail' pk=item.product.pk %}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 text-end">₦{{ item.price|floatformat:2|intcomma }}</td>
+                                    <td class="py-3 px-4 text-center">{{ item.quantity }}</td>
+                                    <td class="py-3 px-4 text-end">₦{{ item.get_total_product_price|floatformat:2|intcomma }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end py-3 px-4">Subtotal:</th>
+                                <td class="text-end py-3 px-4"><strong>₦{{ order.get_total_price|floatformat:2|intcomma }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end py-2 px-4">Shipping (Flat Rate):</th>
+                                <td class="text-end py-2 px-4"><strong>₦{{ order.get_shipping|floatformat:2|intcomma }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end py-2 px-4">Tax ({{ settings.TAX_RATE|multiply:100|floatformat:0 }}%):</th>
+                                <td class="text-end py-2 px-4"><strong>₦{{ order.get_tax|floatformat:2|intcomma }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end py-3 px-4 h5 text-success">Grand Total:</th>
+                                <td class="text-end py-3 px-4 h5 text-success"><strong>₦{{ order.get_grand_total|floatformat:2|intcomma }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-lg rounded-4 h-100">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-credit-card me-2"></i>Payment Details</h5>
+            </div>
+            <div class="card-body">
+                {% if order.payment %}
+                    <p><strong>Payment ID:</strong> {{ order.payment.id }}</p>
+                    <p><strong>Amount Paid:</strong> ₦{{ order.payment.amount|floatformat:2|intcomma }}</p>
+                    <p><strong>Reference:</strong> {{ order.payment.reference }}</p>
+                    <p><strong>Gateway:</strong> {{ order.payment.get_payment_gateway_display }}</p>
+                    {% if order.payment.card_brand and order.payment.card_last_four %}
+                        <p><strong>Card:</strong> {{ order.payment.card_brand }} ending in {{ order.payment.card_last_four }}</p>
+                    {% endif %}
+                    <p><strong>Paid Date:</strong> {{ order.payment.paid_date|date:"F d, Y H:i" }}</p>
+                {% else %}
+                    <p class="text-muted">No payment information available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const orderId = "{{ order.id }}";
+
+        // Handle Status Update via AJAX
+        document.getElementById('orderStatusSelect').addEventListener('change', function() {
+            const newStatus = this.value;
+            if (newStatus) {
+                if (confirm(`Are you sure you want to change order status to "${this.options[this.selectedIndex].text}"?`)) {
+                    fetch('{% url "ecom_admin:order_detail" pk=order.id %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: `action=update_status&status=${newStatus}`
+                    })
+                    .then(response => response.json().then(data => ({ status: response.status, ok: response.ok, data: data })))
+                    .then(({ status, ok, data }) => {
+                        if (ok) {
+                            showAjaxMessage(data.message, 'success');
+                            // Update the status badge immediately
+                            const statusBadge = document.querySelector('.badge.rounded-pill');
+                            if (statusBadge) {
+                                statusBadge.textContent = data.new_status; // Assuming new_status is sent back as display value
+                                // Update badge color based on status (simple mapping)
+                                const statusClassMap = {
+                                    'PENDING': 'bg-warning',
+                                    'PROCESSING': 'bg-primary',
+                                    'SHIPPED': 'bg-info',
+                                    'DELIVERED': 'bg-success',
+                                    'CANCELLED': 'bg-danger'
+                                };
+                                Object.values(statusClassMap).forEach(cls => statusBadge.classList.remove(cls));
+                                statusBadge.classList.add(statusClassMap[data.new_status] || 'bg-secondary');
+                            }
+                            // Reload after a short delay to get the full updated view including DHL sync
+                            setTimeout(() => location.reload(), 1000); 
+                        } else {
+                            showAjaxMessage(data.message, 'danger');
+                            // Revert dropdown if error
+                            this.value = "{{ order.status }}"; 
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating status:', error);
+                        showAjaxMessage('Network error or unexpected issue. Could not update status.', 'danger');
+                        this.value = "{{ order.status }}";
+                    });
+                } else {
+                    this.value = "{{ order.status }}"; // Revert selection if canceled
+                }
+            }
+        });
+
+    });
+</script>
+{% endblock %}
