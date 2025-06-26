@@ -31,6 +31,9 @@
                     <a class="nav-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}" href="{% url 'services' %}">Services</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link position-relative {% if request.resolver_match.url_name == 'cart' %}active{% endif %}" href="{% url 'cart' %}">
                         <i class="fas fa-shopping-cart"></i>
                         Cart
@@ -51,7 +54,6 @@
                         {% else %}
                             <li><a class="dropdown-item" href="{% url 'login' %}">Login</a></li>
                             <li><a class="dropdown-item" href="{% url 'register' %}">Register</a></li>
-                            <li><a class="dropdown-item" href="{% url 'password_reset' %}">Reset Password</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -76,6 +78,7 @@
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="{% url 'products_list' %}">Products</a></li>
                     <li><a href="{% url 'services' %}">Services</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
                 </ul>
             </div>
             <div class="col-md-4 mb-3 mb-md-0">

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_head %}
+    {# Animate.css for subtle entrance animations - Moved from extra_js block #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        /* Define your primary brand color if it's not already in style.css or a global var */
+        :root {
+            --primary-brand-color: #6C63FF; /* Example purple/blue, adjust to your exact color */
+            --light-text-color: #FFFFFF;
+        }
+
+        /* Adjust the contact hero to use the primary brand color */
+        .contact-hero {
+            /* Removed the dark overlay to show the primary color directly */
+            background: var(--primary-brand-color); /* Use your desired primary color */
+            /* You can keep an image if desired, but overlay it with a lower opacity primary color */
+            /* background: linear-gradient(rgba(108, 99, 255, 0.8), rgba(108, 99, 255, 0.8)), url('{% static 'my_ecommerce_app/img/contact_hero.jpg' %}') no-repeat center center / cover; */
+        }
+
+        .contact-hero h1, .contact-hero p {
+            color: var(--light-text-color); /* Ensure text is white for contrast */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+{# The contact-hero section now uses the --primary-brand-color variable defined in extra_head style #}
+<section class="contact-hero text-white py-5 text-center" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+    <div class="container">
+        <h1 class="display-4 fw-bold animate__animated animate__fadeInDown">Get in Touch With Us</h1>
+        <p class="lead mt-3 animate__animated animate__fadeInUp animate__delay-0-5s">
+            We'd love to hear from you! Reach out for any inquiries or support.
+        </p>
+    </div>
+</section>
+
+<section class="contact-details py-5 bg-light">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4 animate__animated animate__fadeInLeft">
+                <div class="card h-100 shadow-sm rounded-4 border-0 p-4">
+                    <div class="card-body">
+                        <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Our Address</h5>
+                        <p class="card-text text-muted">
+                            123 eStore Avenue,<br>
+                            Victoria Island, Lagos, Nigeria
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 animate__animated animate__fadeInUp animate__delay-0-2s">
+                <div class="card h-100 shadow-sm rounded-4 border-0 p-4">
+                    <div class="card-body">
+                        <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Email Us</h5>
+                        <p class="card-text text-muted">
+                            <a href="mailto:samuelholuwatosin@gmail.com" class="text-decoration-none text-primary">samuelholuwatosin@gmail.com</a><br>
+                            <a href="mailto:samuel@samuelomoyin.com.ng" class="text-decoration-none text-primary">samuel@samuelomoyin.com.ng</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 animate__animated animate__fadeInRight animate__delay-0-4s">
+                <div class="card h-100 shadow-sm rounded-4 border-0 p-4">
+                    <div class="card-body">
+                        <i class="fas fa-phone-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Call Us</h5>
+                        <p class="card-text text-muted">
+                            +234 813 296 7555<br>
+                            Mon-Fri, 9am-5pm WAT
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="contact-form-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg rounded-4 p-5 animate__animated animate__zoomIn">
+                    <h3 class="mb-4 text-center fw-bold text-primary">Send Us a Message</h3>
+                    <p class="text-center text-muted mb-4">
+                        Fill out the form below and we'll get back to you as soon as possible.
+                    </p>
+
+                    {# Django Messages Integration #}
+                    {% if messages %}
+                        <div class="my-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-pill shadow-sm" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">{{ form.name.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                                <div class="invalid-feedback d-block">{{ form.subject.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="invalid-feedback d-block">{{ form.message.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        {# Non-field errors #}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger rounded-pill shadow-sm mt-3" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill animate__animated animate__pulse animate__infinite" style="--animate-duration: 2s;"><i class="fas fa-paper-plane me-2"></i>Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="location-map py-5 bg-light">
+    <div class="container">
+        <h3 class="mb-4 text-center fw-bold text-primary animate__animated animate__fadeInUp">Find Us on the Map</h3>
+        <div class="map-container rounded-4 shadow-lg overflow-hidden animate__animated animate__zoomIn">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.6859553655167!2d3.396265075043818!3d6.434444993557999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b8b2ae68b1c43%3A0x8698c9197a9f7d3!2sVictoria%20Island%2C%20Lagos!5e0!3m2!1sen!2sng!4v1719323456789!5m2=1sen!2sng"
+                width="100%"
+                height="450"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Our Location on Map">
+            </iframe>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Script to make alerts auto-dismiss (specific to Django's messages rendered in HTML)
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000); // Dismiss after 5 seconds
+        });
+    });
+</script>
+{% endblock %}

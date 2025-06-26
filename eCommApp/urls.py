@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views 
 from .forms import * 
 
+
 urlpatterns = [
     # === Home & Content Pages ===
     path('', views.HomeView.as_view(), name='home'),
@@ -10,6 +11,8 @@ urlpatterns = [
     path('product_details/<slug:slug>/', views.ProductDetailView.as_view(), name='product_detail'),
     path('services/', views.services_view, name='services'),
     path('faq/', views.faq_view, name='faq'),
+    path('contact/', views.contact_view, name='contact'),
+
 
     # === Cart & Checkout ===
     path('cart/', views.cart_view, name='cart'),

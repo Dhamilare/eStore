@@ -4,12 +4,12 @@ from django.contrib.auth.forms import (
     PasswordResetForm, SetPasswordForm
 )
 from django.contrib.auth import get_user_model
-
 from phonenumber_field.formfields import PhoneNumberField
 
-from .models import BillingAddress, Rating
+from .models import BillingAddress, Rating, ContactInquiry
 
 User = get_user_model()
+
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
@@ -17,7 +17,6 @@ class LoginForm(AuthenticationForm):
         widget=forms.TextInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Enter email or username',
-            'required': True,
         })
     )
     password = forms.CharField(
@@ -25,7 +24,6 @@ class LoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Enter password',
-            'required': True,
         })
     )
     remember_me = forms.BooleanField(
@@ -36,23 +34,22 @@ class LoginForm(AuthenticationForm):
 
 
 class RegisterForm(UserCreationForm):
-
     first_name = forms.CharField(
-        max_length=50, required=True,
+        max_length=50,
         widget=forms.TextInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'First name',
         })
     )
     last_name = forms.CharField(
-        max_length=50, required=True,
+        max_length=50,
         widget=forms.TextInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Last name',
         })
     )
     email = forms.EmailField(
-        max_length=254, required=True,
+        max_length=254,
         widget=forms.EmailInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Email address',
@@ -69,17 +66,14 @@ class RegisterForm(UserCreationForm):
         self.fields['username'].widget = forms.TextInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Username (e.g. john_doe)',
-            'required': True,
         })
         self.fields['password1'].widget = forms.PasswordInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Password',
-            'required': True,
         })
         self.fields['password2'].widget = forms.PasswordInput(attrs={
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Confirm password',
-            'required': True,
         })
 
     def clean_email(self):
@@ -106,7 +100,7 @@ class RegisterForm(UserCreationForm):
 
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
-        label="Email address", max_length=254,
+        label="Email address",
         widget=forms.EmailInput(attrs={
             'autocomplete': 'email',
             'class': 'form-control rounded-pill px-4 py-3',
@@ -123,13 +117,9 @@ class CustomSetPasswordForm(SetPasswordForm):
             'class': 'form-control rounded-pill px-4 py-3',
             'placeholder': 'Enter new password',
         }),
-        help_text=(
-            "<ul>"
-            "<li>Must be at least 8 characters.</li>"
-            "<li>Cannot be too similar to your personal information.</li>"
-            "<li>Cannot be a commonly used password or all numeric.</li>"
-            "</ul>"
-        )
+        help_text="<ul><li>Must be at least 8 characters.</li>"
+                  "<li>Cannot be too similar to your personal information.</li>"
+                  "<li>Cannot be a commonly used password or all numeric.</li></ul>"
     )
     new_password2 = forms.CharField(
         label="Confirm new password", strip=False,
@@ -144,10 +134,8 @@ class CustomSetPasswordForm(SetPasswordForm):
 class CheckoutForm(forms.ModelForm):
     phone = PhoneNumberField(
         region='NG',
-        widget=forms.TextInput(attrs={
-            'class': 'form-control rounded-pill px-4 py-3',
-            'placeholder': 'e.g. +2348012345678',
-        })
+        required=True,
+        help_text='e.g. +2348012345678'
     )
 
     class Meta:
@@ -182,7 +170,7 @@ class CheckoutForm(forms.ModelForm):
                 'placeholder': 'ZIP / postal code',
             }),
             'country': forms.Select(attrs={
-                'class': 'form-control rounded-pill px-4 py-3',
+                'class': 'form-select rounded-pill px-4 py-3',
             }),
             'order_note': forms.Textarea(attrs={
                 'class': 'form-control rounded-3 px-4 py-3',
@@ -190,6 +178,20 @@ class CheckoutForm(forms.ModelForm):
                 'rows': 3,
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['phone'].widget = forms.TextInput(attrs={
+            'class': 'form-control rounded-pill px-4 py-3',
+            'placeholder': self.fields['phone'].help_text,
+        })
+
+        for field_name in self.errors:
+            field = self.fields.get(field_name)
+            if field:
+                existing_class = field.widget.attrs.get('class', '')
+                if 'is-invalid' not in existing_class:
+                    field.widget.attrs['class'] = existing_class + ' is-invalid'
 
 
 class ProductRatingForm(forms.ModelForm):
@@ -213,4 +215,41 @@ class ProductRatingForm(forms.ModelForm):
     class Meta:
         model = Rating
         fields = ('value', 'comment')
-    
+
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactInquiry
+        fields = ['name', 'email', 'subject', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg rounded-3',
+                'placeholder': 'Your Full Name',
+                'required': True,
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control form-control-lg rounded-3',
+                'placeholder': 'Your Email Address',
+                'required': True,
+            }),
+            'subject': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg rounded-3',
+                'placeholder': 'Subject of your inquiry',
+                'required': True,
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'form-control rounded-3',
+                'rows': 5,
+                'placeholder': 'Your message here...',
+                'required': True,
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.errors:
+            field = self.fields.get(field_name)
+            if field:
+                existing_class = field.widget.attrs.get('class', '')
+                if 'is-invalid' not in existing_class:
+                    field.widget.attrs['class'] = existing_class + ' is-invalid'

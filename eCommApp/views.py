@@ -9,9 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Q, Min, Max
-from django.db import transaction
 from django.conf import settings
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -19,7 +17,6 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from .token import *
-from django.urls import reverse
 from django.http import Http404
 from django.contrib.auth import logout
 from django.utils.crypto import get_random_string
@@ -657,4 +654,20 @@ def verifyPayment(request):
 def faq_view(request):
     return render(request, 'faq.html', {})
 
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your message has been sent successfully! We will get back to you soon.')
+            return redirect('contact')
+        else:
+            messages.error(request, 'There was an error with your submission. Please correct the highlighted fields.')
+    else:
+        form = ContactForm()
 
+    context = {
+        'form': form,
+        'page_title': 'Contact Us',
+    }
+    return render(request, 'contact.html', context)

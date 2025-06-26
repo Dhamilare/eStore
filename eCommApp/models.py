@@ -301,3 +301,17 @@ class CartItem(models.Model):
         if self.price_at_addition is None:
             self.price_at_addition = self.product.get_display_price()
         super().save(*args, **kwargs)
+
+class ContactInquiry(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Inquiry from {self.name} - {self.subject}"
+
+    class Meta:
+        verbose_name_plural = "Contact Inquiries"
+        ordering = ['-created_at']
