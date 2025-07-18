@@ -685,7 +685,7 @@ def setup_view(request):
         call_command('migrate')
 
         # Collect static files
-        call_command('collectstatic', interactive=False, verbosity=0)
+        call_command('collectstatic', interactive=True, verbosity=0)
 
         # Create a superuser if one doesn't exist
         User = get_user_model()
