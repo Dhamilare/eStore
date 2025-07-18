@@ -158,7 +158,7 @@ class CategoryFormView(StaffRequiredMixin, View):
             form.save()
             success_message = "Category updated successfully!" if category else "Category added successfully!"
             messages.success(request, success_message)
-            return redirect('ecom_admin:category_list')
+            return redirect('category_list')
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
@@ -348,7 +348,7 @@ class ProductFormView(StaffRequiredMixin, View):
             form.save()
             success_message = "Product updated successfully!" if product else "Product added successfully!"
             messages.success(request, success_message)
-            return redirect('ecom_admin:product_list')
+            return redirect('product_list')
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
