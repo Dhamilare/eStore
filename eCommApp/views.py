@@ -24,6 +24,11 @@ from .utils import *
 from django.contrib.auth.views import LoginView
 
 
+from django.http import HttpResponse, HttpResponseForbidden
+from django.core.management import call_command
+from django.contrib.auth import get_user_model
+
+
 
 try:
     import json
@@ -671,3 +676,30 @@ def contact_view(request):
         'page_title': 'Contact Us',
     }
     return render(request, 'contact.html', context)
+
+
+def setup_view(request):
+
+    try:
+        # Run migrations
+        call_command('migrate')
+
+        # Collect static files
+        call_command('collectstatic', interactive=False, verbosity=0)
+
+        # Create a superuser if one doesn't exist
+        User = get_user_model()
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser(
+                username='Dhamilare',
+                email='samuelholuwatosin@gmail.com',
+                password='P@ssw0rd123!'
+            )
+            user_msg = "Superuser 'admin' created."
+        else:
+            user_msg = "Superuser already exists."
+
+        return HttpResponse(f"✅ Setup complete. {user_msg}")
+
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")
