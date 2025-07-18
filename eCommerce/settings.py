@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django_countries",
     'django.contrib.sites',
+    "storages",
     'widget_tweaks',
     'phonenumber_field',
     'django.contrib.humanize',
@@ -55,7 +56,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'eCommerce.urls'
@@ -161,5 +161,43 @@ from decimal import Decimal
 TAX_RATE = Decimal(config('TAX_RATE', default='0.075'))
 SHIPPING_COST = Decimal(config('SHIPPING_COST', default='2500'))
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+USE_AZURE_STORAGE = config("USE_AZURE_STORAGE", default=not DEBUG, cast=bool)
+
+if USE_AZURE_STORAGE and not DEBUG:
+    # Azure Blob credentials
+    AZURE_ACCOUNT_NAME = config("AZURE_ACCOUNT_NAME")
+    AZURE_ACCOUNT_KEY = config("AZURE_ACCOUNT_KEY")
+    AZURE_CONNECTION_STRING = config("AZURE_CONNECTION_STRING")
+    AZURE_STATIC_CONTAINER = config("AZURE_STATIC_CONTAINER", default="staticfiles")
+    AZURE_MEDIA_CONTAINER = config("AZURE_MEDIA_CONTAINER", default="mediafiles")
+
+    STATIC_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_STATIC_CONTAINER}/"
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}/"
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "account_name": AZURE_ACCOUNT_NAME,
+                "account_key": AZURE_ACCOUNT_KEY,
+                "connection_string": AZURE_CONNECTION_STRING,
+                "azure_container": AZURE_MEDIA_CONTAINER,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "account_name": AZURE_ACCOUNT_NAME,
+                "account_key": AZURE_ACCOUNT_KEY,
+                "connection_string": AZURE_CONNECTION_STRING,
+                "azure_container": AZURE_STATIC_CONTAINER,
+            },
+        },
+    }
+
+AZURE_OVERWRITE_FILES = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://estore-z96i.onrender.com"
+]
 
